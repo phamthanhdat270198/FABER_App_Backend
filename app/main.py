@@ -1,0 +1,37 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.v1.router import api_router
+
+# Tạo ứng dụng FastAPI
+app = FastAPI(
+    title="Paint App API",
+    description="API cho ứng dụng bán sơn",
+    version="1.0.0",
+)
+
+# Cấu hình CORS
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Thêm router cho API v1
+app.include_router(api_router, prefix="/api/v1")
+
+@app.get("/")
+def read_root():
+    return {"message": "Chào mừng đến với API ứng dụng bán sơn"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

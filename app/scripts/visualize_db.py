@@ -1,4 +1,3 @@
-# app/scripts/show_data.py
 import os
 import sys
 from tabulate import tabulate  # Cài đặt với: pip install tabulate
@@ -18,9 +17,12 @@ from app.models.user import User
 from app.models.paint_type import PaintType
 from app.models.image_resource import ImageResource
 from app.models.type_detail import TypeDetail
+from app.models.order_detail import OrderDetail 
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
+
+
 def show_users():
     db = SessionLocal()
     try:
@@ -32,22 +34,44 @@ def show_users():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "Họ Tên", "Địa chỉ", "Số điện thoại", "Điểm thưởng"]
+        headers = ["ID", "Họ Tên", "Số điện thoại", "Điểm thưởng", "Ngày tạo", "Quyền Admin", "Password hash"]
         rows = []
         
         for user in users:
+            # Hiển thị quyền admin như Có/Không
+            admin_status = "Có" if user.admin else "Không"
+
+            
             rows.append([
                 user.id,
                 user.ho_ten,
-                user.dia_chi,
                 user.so_dien_thoai,
-                user.diem_thuong
+                user.diem_thuong,
+                user.ngay_tao.strftime("%Y-%m-%d %H:%M:%S") if hasattr(user, 'ngay_tao') and user.ngay_tao else "N/A",
+                admin_status,
+                user.hashed_password
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng
-        print("\n=== DANH SÁCH NGƯỜI DÙNG ===")
+        print("\n=== DANH SÁCH NGƯỜI DÙNG VÀ QUYỀN ADMIN ===")
         print(tabulate(rows, headers=headers, tablefmt="pretty"))
         print(f"Tổng số người dùng: {len(users)}")
+        
+        # Hiển thị riêng danh sách admin
+        admin_users = [user for user in users if user.admin]
+        if admin_users:
+            print("\n=== DANH SÁCH NGƯỜI DÙNG CÓ QUYỀN ADMIN ===")
+            admin_rows = []
+            for admin in admin_users:
+                admin_rows.append([
+                    admin.id,
+                    admin.ho_ten,
+                    admin.so_dien_thoai
+                ])
+            print(tabulate(admin_rows, headers=["ID", "Họ Tên", "Số điện thoại"], tablefmt="pretty"))
+            print(f"Tổng số admin: {len(admin_users)}")
+        else:
+            print("\nKhông có người dùng nào có quyền admin")
         
     finally:
         db.close()
@@ -114,7 +138,6 @@ def show_paint_types():
         db.close()
 
 
-
 def show_image_resources():
     db = SessionLocal()
     try:
@@ -144,6 +167,7 @@ def show_image_resources():
         
     finally:
         db.close()
+
 def show_type_details():
     db = SessionLocal()
     try:
@@ -196,13 +220,91 @@ def show_type_details():
     finally:
         db.close()
 
+def show_order_details():
+    db = SessionLocal()
+    try:
+        # Lấy tất cả order details từ database với các thông tin liên quan
+        order_details = (
+            db.query(OrderDetail)
+            .options(
+                joinedload(OrderDetail.order).joinedload(Order.user),
+                joinedload(OrderDetail.type_detail).joinedload(TypeDetail.paint_type)
+            )
+            .all()
+        )
+        
+        if not order_details:
+            print("Không có dữ liệu chi tiết đơn hàng trong database.")
+            return
+        
+        # Chuẩn bị dữ liệu cho bảng
+        headers = ["ID", "Đơn Hàng", "Khách Hàng", "Sản Phẩm", "Số Lượng", "Đơn Giá", "Thành Tiền"]
+        rows = []
+        
+        for detail in order_details:
+            # Lấy thông tin từ các bảng liên kết
+            order_id = detail.order.id if detail.order else "N/A"
+            customer_name = detail.order.user.ho_ten if detail.order and detail.order.user else "N/A"
+            product_name = detail.type_detail.product if detail.type_detail else "N/A"
+            unit_price = detail.type_detail.price if detail.type_detail else 0
+            
+            rows.append([
+                detail.id,
+                f"#{order_id}",
+                customer_name,
+                product_name,
+                detail.quantity,
+                f"{unit_price:,.0f} VNĐ" if unit_price else "N/A",
+                f"{detail.total_amount:,.0f} VNĐ"
+            ])
+        
+        # Hiển thị dữ liệu dưới dạng bảng
+        print("\n=== CHI TIẾT ĐƠN HÀNG ===")
+        print(tabulate(rows, headers=headers, tablefmt="pretty"))
+        print(f"Tổng số mục: {len(order_details)}")
+        
+        # Hiển thị tổng tiền theo đơn hàng
+        print("\n=== TỔNG TIỀN THEO ĐƠN HÀNG ===")
+        order_totals = (
+            db.query(
+                Order.id,
+                User.ho_ten,
+                Order.date_time,
+                Order.status,
+                func.sum(OrderDetail.total_amount).label("total")
+            )
+            .join(OrderDetail, Order.id == OrderDetail.order_id)
+            .join(User, Order.user_id == User.id)
+            .group_by(Order.id, User.ho_ten, Order.date_time, Order.status)
+            .all()
+        )
+        
+        if order_totals:
+            total_headers = ["Đơn Hàng", "Khách Hàng", "Ngày Tạo", "Trạng Thái", "Tổng Tiền"]
+            total_rows = []
+            
+            for order_id, customer_name, date_time, status, total in order_totals:
+                total_rows.append([
+                    f"#{order_id}",
+                    customer_name,
+                    date_time.strftime("%Y-%m-%d %H:%M"),
+                    status.value,
+                    f"{total:,.0f} VNĐ"
+                ])
+                
+            print(tabulate(total_rows, headers=total_headers, tablefmt="pretty"))
+        
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
-        # show_users()
+        show_users()
         # show_orders()
         # show_paint_types()
         # show_image_resources()
-        show_type_details()
+        # show_type_details()
+        # show_order_details()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback

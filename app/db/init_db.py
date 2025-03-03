@@ -1,7 +1,7 @@
-# app/db/init_db.py
 import os
 import sys
 import uuid
+import random
 from datetime import datetime, timedelta
 import traceback
 
@@ -18,6 +18,9 @@ from app.models.order import Order, OrderStatus
 from app.models.paint_type import PaintType
 from app.models.image_resource import ImageResource
 from app.models.type_detail import TypeDetail
+from app.models.order_detail import OrderDetail
+from alembic import op
+
 
 def init_db():
     # Tạo tất cả các bảng trong database
@@ -255,6 +258,51 @@ def seed_type_detail():
             print("Đã thêm dữ liệu mẫu vào bảng type_details")
     finally:
         db.close()
+
+def seed_order_detail():
+    db = SessionLocal()
+    try:
+        # Code đã có cho User, Order, PaintType, ImageResource, TypeDetail
+        # ...
+        
+        # Thêm dữ liệu mẫu cho order_details
+        order_detail_count = db.query(OrderDetail).count()
+        if order_detail_count == 0:
+            # Lấy orders và type_details từ database
+            orders = db.query(Order).all()
+            type_details = db.query(TypeDetail).all()
+            
+            if orders and type_details:
+                sample_order_details = []
+                
+                # Tạo dữ liệu cho mỗi order
+                for order in orders:
+                    # Chọn ngẫu nhiên từ 1-3 sản phẩm cho mỗi đơn hàng
+                    num_products = random.randint(1, min(3, len(type_details)))
+                    selected_type_details = random.sample(type_details, num_products)
+                    
+                    for td in selected_type_details:
+                        # Nếu có giá sản phẩm, sử dụng nó để tính total_amount
+                        if td.price:
+                            quantity = random.randint(1, 5)
+                            total_amount = quantity * td.price
+                            
+                            sample_order_details.append(
+                                OrderDetail(
+                                    order_id=order.id,
+                                    type_detail_id=td.id,
+                                    quantity=quantity,
+                                    total_amount=total_amount
+                                )
+                            )
+                
+                if sample_order_details:
+                    db.add_all(sample_order_details)
+                    db.commit()
+                    print(f"Đã thêm {len(sample_order_details)} dữ liệu mẫu vào bảng order_details")
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
         print("Bắt đầu khởi tạo database...")
@@ -262,7 +310,8 @@ if __name__ == "__main__":
         # seed_data()
         # seed_paint_type()
         # seed_image()
-        seed_type_detail()
+        # seed_type_detail()
+        seed_order_detail()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")

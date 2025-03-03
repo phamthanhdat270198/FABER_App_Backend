@@ -21,6 +21,8 @@ class Order(Base):
     
     # Relationship với User - sử dụng string để tránh circular import
     user = relationship("User", back_populates="orders")
+    # Relationship với OrderDetail
+    order_details = relationship("OrderDetail", back_populates="order", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Order(id={self.id}, user_id={self.user_id}, status={self.status}, date_time={self.date_time})>"

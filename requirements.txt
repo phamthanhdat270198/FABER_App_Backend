@@ -1,0 +1,13 @@
+tabulate
+uvicorn
+SQLAlchemy
+python-jose
+python-multipart
+pydantic
+passlib
+MarkupSafe
+fastapi
+bcrypt==4.0.1
+alembic
+sniffio
+email-validator
