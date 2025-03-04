@@ -1,8 +1,14 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
 from app.models.base import Base
+
+import enum
+
+class UserStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
 
 class User(Base):
     __tablename__ = "users"
@@ -15,6 +21,7 @@ class User(Base):
     ngay_tao = Column(DateTime, default=datetime.utcnow, nullable=False)
     admin = Column(Boolean, default=False, nullable=False)
     hashed_password = Column(String, nullable=True)
+    status = Column(Enum(UserStatus), default=UserStatus.PENDING, nullable=False)
 
     
     # Relationship với Order - sử dụng string để tránh circular import

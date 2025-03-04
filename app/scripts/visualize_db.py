@@ -49,7 +49,8 @@ def show_users():
                 user.diem_thuong,
                 user.ngay_tao.strftime("%Y-%m-%d %H:%M:%S") if hasattr(user, 'ngay_tao') and user.ngay_tao else "N/A",
                 admin_status,
-                user.hashed_password
+                user.hashed_password,
+                user.status
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng

@@ -1,11 +1,12 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth
+from app.api.v1.endpoints import auth, users
 
 api_router = APIRouter()
 
 # Thêm các router từ các modules endpoints
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(users.router, prefix="/users", tags=["users"])
 
 # Thêm router cho các endpoints khác khi cần
 # api_router.include_router(users.router, prefix="/users", tags=["users"])

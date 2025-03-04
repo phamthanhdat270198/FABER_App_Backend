@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Union
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password
-from app.models.user import User
+from app.models.user import User, UserStatus
 from app.schemas.user import UserCreate, UserUpdate
 
 
@@ -22,6 +22,7 @@ def create(db: Session, *, obj_in: UserCreate) -> User:
         so_dien_thoai=obj_in.so_dien_thoai,
         diem_thuong=obj_in.diem_thuong,
         admin=obj_in.admin,
+        status=obj_in.status,
         hashed_password=get_password_hash(obj_in.password)
     )
     db.add(db_obj)
@@ -66,3 +67,14 @@ def authenticate(db: Session, *, so_dien_thoai: str, password: str) -> Optional[
 
 def is_admin(user: User) -> bool:
     return user.admin
+
+
+def get_active_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
+    """Lấy danh sách người dùng đã được chấp nhận"""
+    return (
+        db.query(User)
+        .filter(User.status == UserStatus.ACCEPTED)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
