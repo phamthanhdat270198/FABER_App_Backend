@@ -7,8 +7,8 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.db.base import get_db
-from app.models.user import User
-from app import crud
+from app.models.user import User, UserStatus
+from app.crud.crud_user import get, is_admin
 from app.core.security import SECRET_KEY, ALGORITHM
 from app.schemas.token import TokenPayload
 
@@ -28,7 +28,7 @@ def get_current_user(
             detail="Không thể xác thực thông tin người dùng",
         )
         
-    user = crud.crud_user.get(db, id=token_data.sub)
+    user = get(db, id=token_data.sub)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
@@ -40,14 +40,18 @@ def get_current_user(
 def get_current_active_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    # Thêm kiểm tra active nếu cần trong tương lai
+    if current_user.status != UserStatus.ACCEPTED and not current_user.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tài khoản đang chờ xác nhận từ admin",
+        )
     return current_user
 
 
 def get_current_admin_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    if not crud.crud_user.is_admin(current_user):
+    if not is_admin(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Người dùng không có quyền admin",
