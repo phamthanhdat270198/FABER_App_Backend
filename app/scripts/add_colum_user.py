@@ -250,7 +250,87 @@ def add_password_field():
     finally:
         conn.close()
 
+def add_status_column():
+    # Kiểm tra xem file database có tồn tại không
+    if not os.path.exists(DATABASE_PATH):
+        print(f"Không tìm thấy database tại: {DATABASE_PATH}")
+        return
+    
+    # Kết nối với database
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    
+    try:
+        # Kiểm tra xem cột status đã tồn tại chưa
+        cursor.execute("PRAGMA table_info(users)")
+        columns = cursor.fetchall()
+        column_names = [col[1] for col in columns]
+        
+        if 'status' not in column_names:
+            # SQLite không hỗ trợ ALTER TABLE ADD COLUMN với NOT NULL và DEFAULT cho enum
+            # nên chúng ta cần tạo một bảng tạm thời, sao chép dữ liệu và đổi tên
+            
+            # 1. Tạo bảng tạm thời với cột mới
+            cursor.execute('''
+                CREATE TABLE users_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ho_ten TEXT NOT NULL,
+                    dia_chi TEXT,
+                    so_dien_thoai TEXT NOT NULL,
+                    diem_thuong REAL DEFAULT 0.0,
+                    ngay_tao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    admin BOOLEAN NOT NULL DEFAULT 0,
+                    hashed_password TEXT,
+                    status TEXT NOT NULL DEFAULT 'PENDING'
+                )
+            ''')
+            
+            # 2. Sao chép dữ liệu từ bảng cũ sang bảng mới
+            cursor.execute('''
+                INSERT INTO users_new (id, ho_ten, dia_chi, so_dien_thoai, diem_thuong, ngay_tao, admin, hashed_password)
+                SELECT id, ho_ten, dia_chi, so_dien_thoai, diem_thuong, ngay_tao, admin, hashed_password
+                FROM users
+            ''')
+            
+            # 3. Đặt tất cả tài khoản admin thành 'ACCEPTED' (viết hoa)
+            cursor.execute('''
+                UPDATE users_new SET status = 'ACCEPTED' WHERE admin = 1
+            ''')
+            
+            # 4. Xóa bảng cũ
+            cursor.execute("DROP TABLE users")
+            
+            # 5. Đổi tên bảng mới thành tên bảng cũ
+            cursor.execute("ALTER TABLE users_new RENAME TO users")
+            
+            # 6. Tạo lại các indexes
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_id ON users(id)")
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_so_dien_thoai ON users(so_dien_thoai)")
+            
+            conn.commit()
+            print("Đã thêm cột status vào bảng users thành công!")
+            print("Tài khoản admin đã được đặt thành 'ACCEPTED'")
+        else:
+            # Nếu cột status đã tồn tại, kiểm tra xem có cần cập nhật giá trị không
+            cursor.execute('''
+                UPDATE users SET status = 'ACCEPTED' WHERE status = 'accepted'
+            ''')
+            cursor.execute('''
+                UPDATE users SET status = 'PENDING' WHERE status = 'pending'
+            ''')
+            conn.commit()
+            print("Đã cập nhật giá trị status sang chữ hoa")
+    
+    except Exception as e:
+        conn.rollback()
+        print(f"Lỗi khi thêm/cập nhật cột: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     # add_created_date_column()
     # add_admin_column()
-    add_password_field()
+    # add_password_field()
+    add_status_column()
