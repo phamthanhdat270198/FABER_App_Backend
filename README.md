@@ -1,7 +1,7 @@
 
 # FABER_App Backend
 
-Dự án này là backend cho ứng dụng FABER_App, được xây dựng bằng Python.
+Dự án này là backend cho ứng dụng FABER_App, được xây dựng bằng Python FastApi + Sqlite.
 
 ## Hướng dẫn cài đặt và chạy
 
@@ -55,8 +55,9 @@ Dự án này là backend cho ứng dụng FABER_App, được xây dựng bằn
 
 ## Các lệnh bổ sung
 
-* `python -m app.main`: Chạy ứng dụng FABER_App.
 * `python -m app.scripts.visualize_db`: Chạy script để trực quan hóa cơ sở dữ liệu người dùng.
+* Để hiển thị chi tiết từng bảng trong cơ sở dữ liệu. Uncomment các lệnh chạy trong hàm main của visualize_db.py
+* Trong folder app.scripts còn có các ví dụ để thay đổi cấu trúc dữ liệu như add_colum_user.py, change_uuid_id.py. Lệnh chạy `python -m app.scripts.add_colum_user`
 
 ## Yêu cầu
 
