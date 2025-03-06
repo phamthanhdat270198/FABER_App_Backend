@@ -4,10 +4,12 @@ from typing import Any, Union, Optional
 from jose import jwt
 from passlib.context import CryptContext
 
-# Các thiết lập bảo mật
-SECRET_KEY = "your-secret-key-for-jwt"  # Trong thực tế, nên đưa vào biến môi trường
+from config import settings
+
+# Lấy SECRET_KEY từ config
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Thời gian hết hạn của token
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Tạo password context cho hashing và kiểm tra mật khẩu
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
