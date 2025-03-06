@@ -1,3 +1,5 @@
 folder_structure.txt
 __pycache__/
 test_Func
+app/db/__pycache__/init_db.cpython-313.pyc
+app/models/__pycache__/*
