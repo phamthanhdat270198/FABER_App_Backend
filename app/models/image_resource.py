@@ -1,14 +1,11 @@
-# app/models/image_resource.py
-from sqlalchemy import Column, String
-import uuid
-
+from sqlalchemy import Column, Integer, String
 from app.models.base import Base
 
 class ImageResource(Base):
     __tablename__ = "image_resources"
 
-    uuid = Column(String(36), primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     image_path = Column(String, nullable=False)
     
     def __repr__(self):
-        return f"<ImageResource(uuid={self.uuid}, image_path='{self.image_path}')>"
+        return f"<ImageResource(id={self.id}, image_path='{self.image_path}')>"

@@ -126,7 +126,7 @@ def seed_paint_type():
 
 def seed_image():
     db = SessionLocal()
-    img_path = r"C:\Users\THANH DAT\Pictures\faber_imgs"
+    img_path = r"E:\FABER APP\faber_imgs"
     try:
         # Thêm dữ liệu mẫu cho image_resources
         image_count = db.query(ImageResource).count()
@@ -135,32 +135,10 @@ def seed_image():
             for img_name in os.listdir(img_path):
                 image_path = os.path.join(img_path, img_name)
                 img_resource = ImageResource(
-                    uuid=str(uuid.uuid4()),
                     image_path=image_path
                 )
                 sample_images.append(img_resource)
-            # sample_images = [
-            #     ImageResource(
-            #         uuid=str(uuid.uuid4()),
-            #         image_path="/uploads/images/product_001.jpg"
-            #     ),
-            #     ImageResource(
-            #         uuid=str(uuid.uuid4()),
-            #         image_path="/uploads/images/product_002.jpg"
-            #     ),
-            #     ImageResource(
-            #         uuid=str(uuid.uuid4()),
-            #         image_path="/uploads/images/banner_main.jpg"
-            #     ),
-            #     ImageResource(
-            #         uuid=str(uuid.uuid4()),
-            #         image_path="/uploads/images/gallery/interior_01.jpg"
-            #     ),
-            #     ImageResource(
-            #         uuid=str(uuid.uuid4()),
-            #         image_path="/uploads/images/gallery/exterior_02.jpg"
-            #     ),
-            # ]
+            
             db.add_all(sample_images)
             db.commit()
             print("Đã thêm dữ liệu mẫu vào bảng image_resources")
@@ -309,9 +287,9 @@ if __name__ == "__main__":
         init_db()
         # seed_data()
         # seed_paint_type()
-        # seed_image()
+        seed_image()
         # seed_type_detail()
-        seed_order_detail()
+        # seed_order_detail()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")

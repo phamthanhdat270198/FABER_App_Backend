@@ -150,14 +150,13 @@ def show_image_resources():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["UUID", "Đường dẫn hình ảnh"]
+        headers = ["ID", "Đường dẫn hình ảnh"]
         rows = []
         
         for img in images:
             # Rút gọn UUID để dễ đọc
-            short_uuid = img.uuid[:8] + "..." + img.uuid[-4:]
             rows.append([
-                short_uuid,
+                img.id,
                 img.image_path
             ])
         
@@ -300,10 +299,10 @@ def show_order_details():
 
 if __name__ == "__main__":
     try:
-        show_users()
+        # show_users()
         # show_orders()
         # show_paint_types()
-        # show_image_resources()
+        show_image_resources()
         # show_type_details()
         # show_order_details()
     except Exception as e:
