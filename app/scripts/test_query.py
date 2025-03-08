@@ -114,6 +114,8 @@ def run_relationship_queries():
     finally:
         db.close()
 
+
+
 if __name__ == "__main__":
     try:
         run_relationship_queries()

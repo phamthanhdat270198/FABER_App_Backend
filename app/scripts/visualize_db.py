@@ -1,6 +1,7 @@
 import os
 import sys
 from tabulate import tabulate  # Cài đặt với: pip install tabulate
+from datetime import datetime
 
 # Thêm thư mục gốc vào sys.path để import module app
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +19,7 @@ from app.models.paint_type import PaintType
 from app.models.image_resource import ImageResource
 from app.models.type_detail import TypeDetail
 from app.models.order_detail import OrderDetail 
+from app.models.token_store import TokenStore
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
@@ -297,14 +299,70 @@ def show_order_details():
     finally:
         db.close()
 
+def show_token_store():
+    db = SessionLocal()
+    try:
+        # Lấy tất cả tokens từ database với thông tin user
+        tokens = db.query(TokenStore).options(joinedload(TokenStore.user)).all()
+        
+        if not tokens:
+            print("Không có dữ liệu token trong database.")
+            return
+        
+        # Chuẩn bị dữ liệu cho bảng
+        headers = ["ID", "User ID", "Họ tên", "Token (rút gọn)", "Hết hạn", "Thu hồi", "Thiết bị", "Tạo lúc", "Sử dụng lần cuối"]
+        rows = []
+        
+        now = datetime.utcnow()
+        
+        for token in tokens:
+            # Hiển thị token dạng rút gọn để dễ đọc
+            short_token = f"{token.token[:8]}...{token.token[-8:]}" if token.token else "N/A"
+            
+            # Tính trạng thái hiện tại của token
+            is_expired = "Hết hạn" if token.expires_at < now else "Còn hạn"
+            is_revoked = "Đã thu hồi" if token.is_revoked else "Còn hiệu lực"
+            status = f"{is_revoked}, {is_expired}"
+            
+            rows.append([
+                token.id,
+                token.user_id,
+                token.user.ho_ten if token.user else "N/A",
+                short_token,
+                token.expires_at.strftime("%Y-%m-%d %H:%M"),
+                status,
+                token.device_info[:30] + "..." if token.device_info and len(token.device_info) > 30 else token.device_info,
+                token.created_at.strftime("%Y-%m-%d %H:%M"),
+                token.last_used_at.strftime("%Y-%m-%d %H:%M")
+            ])
+        
+        # Hiển thị dữ liệu dưới dạng bảng
+        print("\n=== DANH SÁCH TOKEN ĐĂNG NHẬP GHI NHỚ ===")
+        print(tabulate(rows, headers=headers, tablefmt="pretty"))
+        print(f"Tổng số token: {len(tokens)}")
+        
+        # Hiển thị thống kê
+        valid_tokens = sum(1 for t in tokens if not t.is_revoked and t.expires_at > now)
+        revoked_tokens = sum(1 for t in tokens if t.is_revoked)
+        expired_tokens = sum(1 for t in tokens if t.expires_at < now and not t.is_revoked)
+        
+        print(f"\nThống kê:")
+        print(f"- Token hợp lệ: {valid_tokens}")
+        print(f"- Token đã thu hồi: {revoked_tokens}")
+        print(f"- Token đã hết hạn: {expired_tokens}")
+        
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
         # show_users()
         # show_orders()
         # show_paint_types()
-        show_image_resources()
+        # show_image_resources()
         # show_type_details()
         # show_order_details()
+        show_token_store()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback

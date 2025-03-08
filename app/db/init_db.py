@@ -4,6 +4,7 @@ import uuid
 import random
 from datetime import datetime, timedelta
 import traceback
+import secrets
 
 # Thêm thư mục gốc vào sys.path để import module app
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -19,6 +20,7 @@ from app.models.paint_type import PaintType
 from app.models.image_resource import ImageResource
 from app.models.type_detail import TypeDetail
 from app.models.order_detail import OrderDetail
+from app.models.token_store import TokenStore
 from alembic import op
 
 
@@ -281,15 +283,116 @@ def seed_order_detail():
     finally:
         db.close()
 
+def seed_token_store():
+    db = SessionLocal()
+    try:
+        # Kiểm tra xem đã có dữ liệu trong bảng token_store chưa
+        token_count = db.query(TokenStore).count()
+        if token_count > 0:
+            print(f"Bảng token_store đã có {token_count} bản ghi.")
+            overwrite = input("Bạn có muốn xóa dữ liệu hiện tại và tạo dữ liệu mẫu mới không? (y/n): ")
+            if overwrite.lower() != 'y':
+                print("Hủy bỏ việc tạo dữ liệu mẫu.")
+                return
+            
+            # Xóa dữ liệu hiện tại
+            db.query(TokenStore).delete()
+            db.commit()
+            print("Đã xóa dữ liệu cũ trong bảng token_store.")
+        
+        # Lấy danh sách người dùng hiện có
+        users = db.query(User).all()
+        
+        if not users:
+            print("Không có người dùng trong database. Hãy tạo người dùng trước.")
+            return
+        
+        # Các user agent phổ biến để tạo dữ liệu giả
+        user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36",
+        ]
+        
+        # Tạo dữ liệu mẫu cho mỗi người dùng
+        tokens_created = 0
+        now = datetime.utcnow()
+        
+        for user in users:
+            # Số lượng token ngẫu nhiên cho mỗi người dùng (1-3)
+            num_tokens = random.randint(1, 3)
+            
+            for i in range(num_tokens):
+                # Tạo token với các trạng thái khác nhau
+                token_type = random.choice(["valid", "expired", "revoked"])
+                token = secrets.token_hex(32)  # 64 ký tự hex
+                device_info = random.choice(user_agents)
+                
+                # Thiết lập thời gian tạo và thời gian hết hạn
+                created_delta = timedelta(days=random.randint(1, 60))  # 1-60 ngày trước
+                created_at = now - created_delta
+                
+                if token_type == "valid":
+                    # Token còn hạn (30 ngày từ ngày tạo)
+                    expires_at = created_at + timedelta(days=30)
+                    is_revoked = False
+                elif token_type == "expired":
+                    # Token đã hết hạn
+                    expires_at = created_at + timedelta(days=random.randint(1, 10))
+                    is_revoked = False
+                else:  # "revoked"
+                    # Token đã bị thu hồi (có thể còn hạn hoặc hết hạn)
+                    expires_at = created_at + timedelta(days=30)
+                    is_revoked = True
+                
+                # Thời gian sử dụng lần cuối (ngẫu nhiên giữa thời gian tạo và hiện tại)
+                if now < expires_at and not is_revoked:
+                    # Nếu token còn hiệu lực, last_used có thể là gần đây
+                    last_used_delta = timedelta(days=random.randint(0, min(30, int(created_delta.days))))
+                    last_used_at = now - last_used_delta
+                else:
+                    # Nếu token đã hết hạn hoặc thu hồi, last_used_at phải trước thời điểm đó
+                    max_days = min(created_delta.days, (expires_at - created_at).days)
+                    last_used_delta = timedelta(days=random.randint(0, max_days))
+                    last_used_at = created_at + last_used_delta
+                
+                # Tạo bản ghi token
+                token_store = TokenStore(
+                    user_id=user.id,
+                    token=token,
+                    expires_at=expires_at,
+                    is_revoked=is_revoked,
+                    device_info=device_info,
+                    created_at=created_at,
+                    last_used_at=last_used_at
+                )
+                
+                db.add(token_store)
+                tokens_created += 1
+        
+        db.commit()
+        print(f"Đã tạo thành công {tokens_created} token mẫu cho {len(users)} người dùng!")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"Lỗi khi tạo dữ liệu mẫu: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
         print("Bắt đầu khởi tạo database...")
         init_db()
         # seed_data()
         # seed_paint_type()
-        seed_image()
+        # seed_image()
         # seed_type_detail()
         # seed_order_detail()
+        seed_token_store()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")

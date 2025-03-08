@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, List
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -13,6 +13,8 @@ from app.schemas.token import Token
 from app.schemas.auth import Login, UserAuth
 from app.schemas.user import UserResponse, UserCreate, UserBasicInfo, UserUpdate, UserStatusEnum
 from app.models.user import User, UserStatus
+from fastapi import Cookie, Header
+from app.crud import crud_token_store
 
 router = APIRouter()
 
@@ -158,3 +160,116 @@ def approve_registration(
     updated_user = update(db, db_obj=user, obj_in=user_update)
     
     return updated_user
+
+@router.post("/login/remember", response_model=Token)
+def login_remember_me(
+    login_data: Login,
+    user_agent: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Đăng nhập với tính năng Remember Me
+    Tạo token ngắn hạn (JWT) và token dài hạn (lưu trong database)
+    """
+    user = authenticate(
+        db, so_dien_thoai=login_data.so_dien_thoai, password=login_data.password
+    )
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Số điện thoại hoặc mật khẩu không chính xác",
+        )
+    
+    # Kiểm tra xem tài khoản đã được chấp nhận chưa
+    if user.status != UserStatus.ACCEPTED and not user.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tài khoản đang chờ xác nhận từ admin",
+        )
+    
+    # Tạo access token JWT bình thường
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        user.id, expires_delta=access_token_expires
+    )
+    
+    # Tạo remember token dài hạn (30 ngày)
+    remember_token = crud_token_store.create_token(
+        db=db, 
+        user_id=user.id, 
+        expires_days=30,
+        device_info=user_agent
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "remember_token": remember_token.token
+    }
+
+
+@router.post("/refresh-token")
+def refresh_token(
+    token: str,
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Làm mới access token sử dụng remember token
+    """
+    # Tìm token trong database
+    db_token = crud_token_store.get_by_token(db, token)
+    
+    if not db_token or not db_token.is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token không hợp lệ hoặc đã hết hạn",
+        )
+    
+    # Cập nhật thời gian sử dụng gần nhất
+    db_token = crud_token_store.update_last_used(db, db_token)
+    
+    # Tạo access token JWT mới
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        db_token.user_id, expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+
+@router.post("/logout")
+def logout(
+    token: str,
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Đăng xuất bằng cách thu hồi remember token
+    """
+    success = crud_token_store.revoke_token(db, token)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token không hợp lệ",
+        )
+    
+    return {"message": "Đăng xuất thành công"}
+
+
+@router.post("/logout-all-devices")
+def logout_all_devices(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Đăng xuất khỏi tất cả thiết bị bằng cách thu hồi tất cả token
+    """
+    count = crud_token_store.revoke_all_tokens_for_user(db, current_user.id)
+    
+    return {
+        "message": f"Đã đăng xuất khỏi {count} thiết bị",
+        "count": count
+    }
