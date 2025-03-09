@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Enum
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Enum, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -22,6 +22,8 @@ class User(Base):
     admin = Column(Boolean, default=False, nullable=False)
     hashed_password = Column(String, nullable=True)
     status = Column(Enum(UserStatus), default=UserStatus.PENDING, nullable=False)
+    date_of_birth = Column(Date, nullable=True)
+    gender = Column(String, nullable=True)
 
     
     # Relationship với Order - sử dụng string để tránh circular import

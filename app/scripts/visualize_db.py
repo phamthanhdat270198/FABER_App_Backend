@@ -36,7 +36,7 @@ def show_users():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "Họ Tên", "Số điện thoại", "Điểm thưởng", "Ngày tạo", "Quyền Admin", "Password hash"]
+        headers = ["ID", "Họ Tên", "Số điện thoại", "Điểm thưởng", "Ngày tạo", "Quyền Admin", "Password hash", "Status", "Date of Birth", "Gender"]
         rows = []
         
         for user in users:
@@ -52,7 +52,9 @@ def show_users():
                 user.ngay_tao.strftime("%Y-%m-%d %H:%M:%S") if hasattr(user, 'ngay_tao') and user.ngay_tao else "N/A",
                 admin_status,
                 user.hashed_password,
-                user.status
+                user.status,
+                user.date_of_birth,
+                user.gender
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng
@@ -122,14 +124,14 @@ def show_paint_types():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "Loại Sơn", "Mô tả"]
+        headers = ["ID", "Loại Sơn"]
         rows = []
         
         for pt in paint_types:
             rows.append([
                 pt.id,
                 pt.paint_type,
-                pt.description
+                
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng
@@ -356,13 +358,13 @@ def show_token_store():
 
 if __name__ == "__main__":
     try:
-        # show_users()
+        show_users()
         # show_orders()
         # show_paint_types()
         # show_image_resources()
         # show_type_details()
         # show_order_details()
-        show_token_store()
+        # show_token_store()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback

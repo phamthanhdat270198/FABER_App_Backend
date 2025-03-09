@@ -102,23 +102,23 @@ def seed_paint_type():
         sample_paint_types = [
             PaintType(
                 paint_type="Sơn Nước",
-                description="Sơn dễ pha loãng, khô nhanh, ít mùi, dễ lau chùi, phù hợp cho tường trong nhà"
+                # description="Sơn dễ pha loãng, khô nhanh, ít mùi, dễ lau chùi, phù hợp cho tường trong nhà"
             ),
             PaintType(
                 paint_type="Sơn Dầu",
-                description="Sơn gốc dầu, bền màu, chống thấm tốt, phù hợp cho bề mặt kim loại và gỗ"
+                # description="Sơn gốc dầu, bền màu, chống thấm tốt, phù hợp cho bề mặt kim loại và gỗ"
             ),
             PaintType(
                 paint_type="Sơn Chống Rỉ",
-                description="Sơn lót đặc biệt ngăn chặn quá trình oxy hóa, bảo vệ bề mặt kim loại"
+                # description="Sơn lót đặc biệt ngăn chặn quá trình oxy hóa, bảo vệ bề mặt kim loại"
             ),
             PaintType(
                 paint_type="Sơn Epoxy",
-                description="Sơn hai thành phần, độ bám dính và độ bền cao, chịu hóa chất, phù hợp cho sàn công nghiệp"
+                # description="Sơn hai thành phần, độ bám dính và độ bền cao, chịu hóa chất, phù hợp cho sàn công nghiệp"
             ),
             PaintType(
                 paint_type="Sơn Nội Thất",
-                description="Sơn chuyên dụng cho không gian trong nhà, ít mùi, an toàn cho sức khỏe"
+                # description="Sơn chuyên dụng cho không gian trong nhà, ít mùi, an toàn cho sức khỏe"
             ),
         ]
         db.add_all(sample_paint_types)
