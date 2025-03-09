@@ -7,7 +7,6 @@ class PaintType(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     paint_type = Column(String, nullable=False, unique=True)
-    description = Column(String, nullable=True)
     
     # Relationship với TypeDetail
     type_details = relationship("TypeDetail", back_populates="paint_type", cascade="all, delete-orphan")
