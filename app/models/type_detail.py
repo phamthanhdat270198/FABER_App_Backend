@@ -22,6 +22,9 @@ class TypeDetail(Base):
     
     # Relationship với OrderDetail
     order_details = relationship("OrderDetail", back_populates="type_detail")
+
+    # Relationship với ImageResource
+    images = relationship("ImageResource", back_populates="type_detail", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<TypeDetail(id={self.id}, product='{self.product}', paint_type_id={self.paint_type_id})>"
