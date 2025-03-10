@@ -124,14 +124,18 @@ def show_paint_types():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "Loại Sơn"]
+        headers = ["ID", "Loại Sơn", "Mô tả sp", "Thành phần", "Hướng dẫn sử dụng", "Bảo quản", "Lưu ý"]
         rows = []
         
         for pt in paint_types:
             rows.append([
                 pt.id,
-                pt.paint_type,
-                
+                pt.paint_type,  
+                pt.mo_ta_san_pham,
+                pt.thanh_phan,
+                pt.huong_dan_su_dung, 
+                pt.bao_quan,
+                pt.luu_y              
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng
@@ -356,15 +360,75 @@ def show_token_store():
     finally:
         db.close()
 
+def show_product_images():
+    db = SessionLocal()
+    try:
+        # Lấy tất cả sản phẩm với ảnh
+        products = db.query(TypeDetail).options(joinedload(TypeDetail.images)).all()
+        
+        if not products:
+            print("Không có sản phẩm trong database.")
+            return
+        
+        # Hiển thị thống kê
+        total_images = sum(len(product.images) for product in products)
+        products_with_images = sum(1 for product in products if product.images)
+        
+        print(f"\n=== THỐNG KÊ ẢNH SẢN PHẨM ===")
+        print(f"Tổng số sản phẩm: {len(products)}")
+        print(f"Sản phẩm có ảnh: {products_with_images}")
+        print(f"Tổng số ảnh: {total_images}")
+        print(f"Trung bình: {total_images / len(products):.1f} ảnh/sản phẩm")
+        
+        # Hiển thị danh sách tất cả các sản phẩm
+        headers = ["ID", "Sản phẩm", "Mã", "Số lượng ảnh"]
+        rows = []
+        
+        for product in products:
+            rows.append([
+                product.id,
+                product.product,
+                product.code,
+                len(product.images)
+            ])
+        
+        print("\n=== DANH SÁCH SẢN PHẨM VÀ SỐ LƯỢNG ẢNH ===")
+        print(tabulate(rows, headers=headers, tablefmt="pretty"))
+        
+        # Hỏi người dùng có muốn xem chi tiết từng sản phẩm không
+        show_details = input("\nBạn có muốn xem chi tiết ảnh của từng sản phẩm không? (y/n): ")
+        
+        if show_details.lower() == 'y':
+            for product in products:
+                if not product.images:
+                    continue
+                    
+                print(f"\n=== ẢNH CỦA SẢN PHẨM: {product.product} (ID: {product.id}) ===")
+                
+                image_headers = ["ID", "Đường dẫn ảnh"]
+                image_rows = []
+                
+                for image in product.images:
+                    image_rows.append([
+                        image.id,
+                        image.image_path
+                    ])
+                
+                print(tabulate(image_rows, headers=image_headers, tablefmt="pretty"))
+        
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
-        show_users()
+        # show_users()
         # show_orders()
         # show_paint_types()
         # show_image_resources()
         # show_type_details()
         # show_order_details()
         # show_token_store()
+        show_product_images()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback

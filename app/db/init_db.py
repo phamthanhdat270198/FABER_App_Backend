@@ -97,34 +97,59 @@ def seed_data():
 
 def seed_paint_type():
     db = SessionLocal()
-    paint_type_count = db.query(PaintType).count()
-    if paint_type_count == 0:
-        sample_paint_types = [
-            PaintType(
-                paint_type="Sơn Nước",
-                # description="Sơn dễ pha loãng, khô nhanh, ít mùi, dễ lau chùi, phù hợp cho tường trong nhà"
-            ),
-            PaintType(
-                paint_type="Sơn Dầu",
-                # description="Sơn gốc dầu, bền màu, chống thấm tốt, phù hợp cho bề mặt kim loại và gỗ"
-            ),
-            PaintType(
-                paint_type="Sơn Chống Rỉ",
-                # description="Sơn lót đặc biệt ngăn chặn quá trình oxy hóa, bảo vệ bề mặt kim loại"
-            ),
-            PaintType(
-                paint_type="Sơn Epoxy",
-                # description="Sơn hai thành phần, độ bám dính và độ bền cao, chịu hóa chất, phù hợp cho sàn công nghiệp"
-            ),
-            PaintType(
-                paint_type="Sơn Nội Thất",
-                # description="Sơn chuyên dụng cho không gian trong nhà, ít mùi, an toàn cho sức khỏe"
-            ),
-        ]
-        db.add_all(sample_paint_types)
+    try:
+        paint_types = db.query(PaintType).all()
+        if not paint_types:
+            print("Không có dữ liệu loại sơn trong database.")
+            return
+            
+        # Cập nhật thông tin cho từng loại sơn
+        for paint_type in paint_types:
+            # Dựa vào tên loại sơn để thêm thông tin phù hợp
+            if "Nước" in paint_type.paint_type:
+                paint_type.mo_ta_san_pham = "Sơn nước cao cấp, thân thiện với môi trường, dễ lau chùi, có khả năng kháng khuẩn và chống bám bẩn."
+                paint_type.thanh_phan = "Nhựa Acrylic, Titan Dioxide, bột màu, chất phụ gia đặc biệt và nước."
+                paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp, mỗi lớp cách nhau 2-3 giờ. Dùng cọ, con lăn hoặc máy phun sơn."
+                paint_type.luu_y = "Tránh sơn khi nhiệt độ dưới 10°C hoặc trên 35°C. Không sơn khi trời mưa hoặc độ ẩm cao."
+                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp và nhiệt độ cao. Đậy kín nắp sau khi sử dụng."
+            
+            elif "Dầu" in paint_type.paint_type:
+                paint_type.mo_ta_san_pham = "Sơn dầu cao cấp, bền màu, chống thấm tốt, phù hợp cho bề mặt kim loại và gỗ, chịu được thời tiết khắc nghiệt."
+                paint_type.thanh_phan = "Nhựa Alkyd, dầu, bột màu, chất phụ gia và dung môi."
+                paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp, mỗi lớp cách nhau 6-8 giờ. Dùng cọ hoặc con lăn phù hợp."
+                paint_type.luu_y = "Đảm bảo thông thoáng khi sử dụng. Tránh hút thuốc và các nguồn lửa khác. Sử dụng dụng cụ bảo hộ cá nhân."
+                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
+            
+            elif "Chống Rỉ" in paint_type.paint_type:
+                paint_type.mo_ta_san_pham = "Sơn lót đặc biệt ngăn chặn quá trình oxy hóa, bảo vệ bề mặt kim loại và chống ăn mòn hiệu quả."
+                paint_type.thanh_phan = "Nhựa Epoxy, bột kẽm, chất chống ăn mòn, bột màu và dung môi."
+                paint_type.huong_dan_su_dung = "Làm sạch bề mặt cần sơn. Khuấy đều sơn. Sơn 1-2 lớp, mỗi lớp cách nhau 4-6 giờ trước khi sơn phủ."
+                paint_type.luu_y = "Phải làm sạch hoàn toàn vết rỉ trước khi sơn. Đảm bảo thông thoáng khi sử dụng."
+                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
+            
+            elif "Epoxy" in paint_type.paint_type:
+                paint_type.mo_ta_san_pham = "Sơn hai thành phần, độ bám dính và độ bền cao, chịu hóa chất, phù hợp cho sàn công nghiệp và bề mặt bê tông."
+                paint_type.thanh_phan = "Nhựa Epoxy, chất đóng rắn, bột màu, phụ gia đặc biệt và dung môi."
+                paint_type.huong_dan_su_dung = "Trộn hai thành phần theo tỷ lệ quy định. Sử dụng trong vòng 4-6 giờ sau khi trộn. Sơn 2 lớp, mỗi lớp cách nhau 8-12 giờ."
+                paint_type.luu_y = "Không sử dụng khi nhiệt độ dưới 10°C. Đảm bảo thông thoáng khi sử dụng. Sơn sẽ cứng hoàn toàn sau 7 ngày."
+                paint_type.bao_quan = "Bảo quản hai thành phần riêng biệt. Đậy kín nắp, để nơi khô ráo, thoáng mát."
+            
+            else:  # Mặc định cho các loại khác
+                paint_type.mo_ta_san_pham = f"Sơn {paint_type.paint_type} chất lượng cao, đáp ứng các tiêu chuẩn về độ bền và an toàn."
+                paint_type.thanh_phan = "Nhựa, bột màu, phụ gia và dung môi."
+                paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp để có hiệu quả tốt nhất."
+                paint_type.luu_y = "Đọc kỹ hướng dẫn trước khi sử dụng. Đảm bảo thông thoáng khi sơn."
+                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
+        
         db.commit()
-        print("Đã thêm dữ liệu mẫu vào bảng paint_types")
-
+        print(f"Đã cập nhật thông tin cho {len(paint_types)} loại sơn.")
+    except Exception as e:
+        db.rollback()
+        print(f"Lỗi khi cập nhật thông tin: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        db.close()
 
 def seed_image():
     db = SessionLocal()
@@ -144,6 +169,99 @@ def seed_image():
             db.add_all(sample_images)
             db.commit()
             print("Đã thêm dữ liệu mẫu vào bảng image_resources")
+    finally:
+        db.close()
+
+def seed_product_images():
+    db = SessionLocal()
+    try:
+        # Lấy tất cả sản phẩm từ database
+        products = db.query(TypeDetail).all()
+        
+        if not products:
+            print("Không có sản phẩm trong database.")
+            return
+        
+        # Danh sách đường dẫn ảnh mẫu cho các loại sản phẩm
+        sample_image_paths = {
+            "Sơn Nước": [
+                "/uploads/images/products/son_nuoc_1.jpg",
+                "/uploads/images/products/son_nuoc_2.jpg",
+                "/uploads/images/products/son_nuoc_3.jpg",
+                "/uploads/images/products/son_nuoc_4.jpg"
+            ],
+            "Sơn Dầu": [
+                "/uploads/images/products/son_dau_1.jpg",
+                "/uploads/images/products/son_dau_2.jpg",
+                "/uploads/images/products/son_dau_3.jpg"
+            ],
+            "Sơn Epoxy": [
+                "/uploads/images/products/son_epoxy_1.jpg",
+                "/uploads/images/products/son_epoxy_2.jpg",
+                "/uploads/images/products/son_epoxy_3.jpg",
+                "/uploads/images/products/son_epoxy_4.jpg",
+                "/uploads/images/products/son_epoxy_5.jpg"
+            ],
+            "Sơn Chống Rỉ": [
+                "/uploads/images/products/son_chong_ri_1.jpg",
+                "/uploads/images/products/son_chong_ri_2.jpg",
+                "/uploads/images/products/son_chong_ri_3.jpg"
+            ],
+            "default": [
+                "/uploads/images/products/paint_1.jpg",
+                "/uploads/images/products/paint_2.jpg",
+                "/uploads/images/products/paint_3.jpg"
+            ]
+        }
+        
+        # Xóa ảnh cũ (tùy chọn)
+        delete_existing = input("Bạn có muốn xóa tất cả ảnh cũ không? (y/n): ")
+        if delete_existing.lower() == 'y':
+            db.query(ImageResource).delete()
+            print("Đã xóa tất cả ảnh cũ.")
+        
+        # Thêm ảnh cho mỗi sản phẩm
+        images_added = 0
+        
+        for product in products:
+            # Xác định loại sơn của sản phẩm
+            paint_type_name = db.query(PaintType.paint_type).join(TypeDetail).filter(TypeDetail.id == product.id).scalar()
+            # paint_type_name = product.paint_type
+            # Chọn đường dẫn ảnh phù hợp với loại sơn
+            image_paths = []
+            for key in sample_image_paths:
+                if key in paint_type_name:
+                    image_paths = sample_image_paths[key]
+                    break
+            
+            # Nếu không tìm thấy loại phù hợp, dùng mặc định
+            if not image_paths:
+                image_paths = sample_image_paths["default"]
+            
+            # Số lượng ảnh ngẫu nhiên cho mỗi sản phẩm (2-4)
+            num_images = random.randint(2, min(4, len(image_paths)))
+            selected_paths = random.sample(image_paths, num_images)
+            
+            # Thêm ảnh cho sản phẩm
+            for path in selected_paths:
+                # Thêm mã sản phẩm vào đường dẫn để làm cho nó độc đáo hơn
+                unique_path = path.replace(".jpg", f"_{product.code}_{random.randint(100, 999)}.jpg")
+                
+                image = ImageResource(
+                    image_path=unique_path,
+                    type_detail_id=product.id
+                )
+                db.add(image)
+                images_added += 1
+        
+        db.commit()
+        print(f"Đã thêm {images_added} ảnh cho {len(products)} sản phẩm.")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"Lỗi khi thêm ảnh sản phẩm: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         db.close()
 
@@ -390,9 +508,10 @@ if __name__ == "__main__":
         # seed_data()
         # seed_paint_type()
         # seed_image()
+        seed_product_images()
         # seed_type_detail()
         # seed_order_detail()
-        seed_token_store()
+        # seed_token_store()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")
