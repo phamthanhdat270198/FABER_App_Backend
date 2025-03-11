@@ -11,15 +11,6 @@ from app.crud.crud_user import update
 
 router = APIRouter()
 
-@router.get("/me", response_model=UserBasicInfo)
-def read_user_profile(
-    current_user: User = Depends(get_current_active_user)
-) -> Any:
-    """
-    Lấy thông tin profile của người dùng hiện tại
-    """
-    return current_user
-
 @router.put("/me", response_model=UserBasicInfo)
 def update_user_profile(
     profile_in: UserProfileUpdate,
