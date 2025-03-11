@@ -1,23 +1,31 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from app.schemas.image_resource import ImageResourceResponse
 
-class PaintTypeInfo(BaseModel):
+# === API 1: Schemas cho danh sách loại sơn ===
+class PaintTypeItem(BaseModel):
     id: int
-    paint_type: str
-    mo_ta_san_pham: str
-    thanh_phan: str
-    huong_dan_su_dung: str
-    luu_y: Optional[str] = None
-    bao_quan: str
-    
-    class Config:
-        orm_mode = True
+    name: str
 
-class ProductDetail(BaseModel):
+class PaintTypeListResponse(BaseModel):
+    paint_types: List[PaintTypeItem]
+
+# === API 2: Schemas cho danh sách sản phẩm theo loại sơn ===
+class ProductItem(BaseModel):
     id: int
+    name: str
+    volume: Optional[float] = None
+    price: Optional[float] = None
+    image_path: Optional[str] = None
+
+class ProductListResponse(BaseModel):
     paint_type_id: int
-    product: str
+    paint_type_name: str
+    products: List[ProductItem]
+
+# === API 3: Schema cho chi tiết sản phẩm ===
+class ProductDetailResponse(BaseModel):
+    id: int
+    product_name: str
     code: Optional[str] = None
     package: Optional[str] = None
     volume: Optional[float] = None
@@ -26,14 +34,13 @@ class ProductDetail(BaseModel):
     promotion: Optional[str] = None
     
     # Thông tin về loại sơn
-    paint_type: PaintTypeInfo
+    paint_type_id: int
+    paint_type_name: str
+    mo_ta_san_pham: str
+    thanh_phan: str
+    huong_dan_su_dung: str
+    luu_y: Optional[str] = None
+    bao_quan: str
     
-    # Danh sách ảnh sản phẩm
-    images: List[ImageResourceResponse] = []
-    
-    class Config:
-        orm_mode = True
-
-class ProductListResponse(BaseModel):
-    total: int
-    products: List[ProductDetail]
+    # Danh sách đường dẫn ảnh
+    images: List[str] = []
