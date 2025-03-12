@@ -11,7 +11,7 @@ from app.api.deps import get_db, get_current_user, get_current_admin_user
 from app.core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.schemas.token import Token
 from app.schemas.auth import Login, UserAuth
-from app.schemas.user import UserResponse, UserCreate, UserBasicInfo, UserUpdate, UserStatusEnum
+from app.schemas.user import UserResponse, UserCreate, UserBasicInfo, UserUpdate, UserStatusEnum, UserStatusInfo
 from app.models.user import User, UserStatus
 from fastapi import Cookie, Header
 from app.crud import crud_token_store
@@ -114,7 +114,7 @@ def create_registration_request(
     return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận"}
 
 
-@router.get("/pending-registrations", response_model=List[UserBasicInfo])
+@router.get("/pending-registrations", response_model=List[UserStatusInfo])
 def get_pending_registrations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
@@ -130,6 +130,24 @@ def get_pending_registrations(
         .all()
     )
     return pending_users
+
+@router.get("/accepted-registrations", response_model=List[UserStatusInfo])
+def get_pending_registrations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Lấy danh sách yêu cầu đăng ký đang chờ xác nhận
+    Chỉ admin mới có quyền truy cập
+    """
+    accepted_users = (
+        db.query(User)
+        .filter(User.status == UserStatus.ACCEPTED)
+        .order_by(User.ngay_tao.desc())
+        .all()
+    )
+    
+    return accepted_users
 
 
 @router.post("/approve-registration/{user_id}", response_model=UserBasicInfo)
