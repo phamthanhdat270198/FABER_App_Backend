@@ -66,6 +66,13 @@ class UserBasicInfo(BaseModel):
     class Config:
         orm_mode = True
 
+class UserStatusInfo(BaseModel):
+    id: int
+    ho_ten: str
+    so_dien_thoai: str
+    status: UserStatusEnum
+    class Config:
+            orm_mode = True
 # Schema cho cập nhật profile
 class UserProfileUpdate(BaseModel):
     ho_ten: Optional[str] = None
@@ -76,7 +83,7 @@ class UserProfileUpdate(BaseModel):
     @validator('date_of_birth')
     def validate_date_of_birth(cls, v):
         if v is not None:
-            # Kiểm tra người dùng phải lớn hơn 10 tuổi
+            # Kiểm tra người dùng phải lớn hơn 18 tuổi
             today = date.today()
             age = today.year - v.year - ((today.month, today.day) < (v.month, v.day))
             if age < 18:
