@@ -51,7 +51,6 @@ def get_current_active_user(
 def get_current_admin_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    print("admin user ------- ")
     if not is_admin(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -421,14 +421,14 @@ def show_product_images():
 
 if __name__ == "__main__":
     try:
-        # show_users()
+        show_users()
         # show_orders()
         # show_paint_types()
         # show_image_resources()
         # show_type_details()
         # show_order_details()
         # show_token_store()
-        show_product_images()
+        # show_product_images()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback
