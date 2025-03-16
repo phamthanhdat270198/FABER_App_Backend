@@ -1,3 +1,6 @@
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -33,6 +36,21 @@ app.include_router(api_router, prefix="/api/v1")
 @app.get("/")
 def read_root():
     return {"message": "Chào mừng đến với API ứng dụng bán sơn"}
+
+# Định nghĩa đường dẫn thư mục static
+static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "static")
+os.makedirs(static_dir, exist_ok=True)
+
+# Thêm vào sau khi tạo ứng dụng FastAPI
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+@app.get("/admin-login")
+async def admin_login_page():
+    return FileResponse(os.path.join(static_dir, "admin_login.html"))
+
+@app.get("/admin")
+async def admin_page():
+    return FileResponse(os.path.join(static_dir, "admin.html"))
 
 if __name__ == "__main__":
     import uvicorn

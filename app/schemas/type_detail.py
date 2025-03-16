@@ -11,6 +11,7 @@ class TypeDetailBase(BaseModel):
     m2_cover: Optional[float] = None
     promotion: Optional[str] = None
     base64: Optional[str] = None
+    is_active: bool = True
 
 class TypeDetailCreate(TypeDetailBase):
     pass
@@ -25,6 +26,7 @@ class TypeDetailUpdate(BaseModel):
     m2_cover: Optional[float] = None
     promotion: Optional[str] = None
     base64: Optional[str] = None
+    is_active: bool = True
 
 class TypeDetailResponse(TypeDetailBase):
     id: int

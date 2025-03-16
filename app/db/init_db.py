@@ -508,9 +508,9 @@ if __name__ == "__main__":
         # seed_data()
         # seed_paint_type()
         # seed_image()
-        seed_product_images()
+        # seed_product_images()
         # seed_type_detail()
-        # seed_order_detail()
+        seed_order_detail()
         # seed_token_store()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:

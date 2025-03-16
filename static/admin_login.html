@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập Hệ Thống Quản Lý</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .login-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error-message {
+            color: #f44336;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        .login-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Đăng Nhập Quản Trị</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="phone">Số điện thoại:</label>
+                <input type="text" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Đăng Nhập</button>
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+        <div class="login-footer">
+            Hệ thống quản lý nội bộ. Chỉ dành cho quản trị viên.
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/v1';
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        let verifyInProgress = false; // Cờ kiểm soát
+
+        // Kiểm tra nếu đã đăng nhập - chỉ kiểm tra một lần khi trang tải
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('admin_token');
+            if (token && !verifyInProgress) {
+                // Kiểm tra token hợp lệ
+                verifyInProgress = true;
+                verifyToken(token);
+            }
+        });
+
+        async function verifyToken(token) {
+            try {
+                // Thử lấy thông tin người dùng hiện tại để kiểm tra token
+                const response = await fetch(`${API_URL}/users/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    // Kiểm tra quyền admin
+                    if (userData.admin) {
+                        // Token hợp lệ và là admin, chuyển hướng đến trang admin
+                        window.location.href = '/admin';
+                        return; // Tránh tiếp tục thực thi
+                    }
+                }
+                
+                // Token không hợp lệ hoặc không phải admin, xóa token cũ
+                localStorage.removeItem('admin_token');
+                verifyInProgress = false;
+                
+            } catch (error) {
+                console.error('Lỗi kiểm tra token:', error);
+                localStorage.removeItem('admin_token');
+                verifyInProgress = false;
+            }
+        }
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Gọi API đăng nhập
+                const response = await fetch(`${API_URL}/auth/login/json`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        so_dien_thoai: phone,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Lưu token tạm thời để kiểm tra quyền admin
+                    const tempToken = data.access_token;
+                    
+                    // Kiểm tra xem người dùng có phải admin không
+                    const adminCheck = await checkAdminRole(tempToken);
+                    
+                    if (adminCheck) {
+                        // Lưu token chính thức nếu là admin
+                        localStorage.setItem('admin_token', tempToken);
+                        
+                        // Chuyển hướng đến trang admin
+                        window.location.href = '/admin';
+                    } else {
+                        showError('Tài khoản không có quyền quản trị');
+                    }
+                } else {
+                    // Hiển thị lỗi
+                    showError(data.detail || 'Đăng nhập thất bại');
+                }
+            } catch (error) {
+                showError('Lỗi hệ thống, vui lòng thử lại sau');
+                console.error(error);
+            }
+        });
+
+        async function checkAdminRole(token) {
+            try {
+                const response = await fetch(`${API_URL}/users/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    return userData.admin; // Trả về true nếu là admin
+                }
+                
+                return false;
+                
+            } catch (error) {
+                console.error('Lỗi kiểm tra quyền admin:', error);
+                return false;
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy.orm import relationship
 from app.models.base import Base
 
@@ -13,9 +13,10 @@ class PaintType(Base):
     huong_dan_su_dung = Column(Text, nullable=False, default="")
     luu_y = Column(Text, nullable=True)
     bao_quan = Column(Text, nullable=False, default="")
-    
+    is_active = Column(Boolean, default=True, nullable=False)
+
     # Relationship với TypeDetail
     type_details = relationship("TypeDetail", back_populates="paint_type", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<PaintType(id={self.id}, paint_type='{self.paint_type}')>"
+        return f"<PaintType(id={self.id}, paint_type='{self.paint_type}', active={self.is_active})>"

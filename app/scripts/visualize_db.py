@@ -187,7 +187,7 @@ def show_type_details():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi"]
+        headers = ["ID", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi", "is active"]
         rows = []
         
         for detail in type_details:
@@ -200,7 +200,8 @@ def show_type_details():
                 f"{detail.volume:.1f}" if detail.volume else "N/A",
                 f"{detail.price:,.0f} VNĐ" if detail.price else "N/A",
                 f"{detail.m2_cover:.1f}" if detail.m2_cover else "N/A",
-                detail.promotion or "Không có"
+                detail.promotion or "Không có",
+                detail.is_active
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng
@@ -421,9 +422,9 @@ def show_product_images():
 
 if __name__ == "__main__":
     try:
-        show_users()
+        # show_users()
         # show_orders()
-        # show_paint_types()
+        show_paint_types()
         # show_image_resources()
         # show_type_details()
         # show_order_details()

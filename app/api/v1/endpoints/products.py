@@ -114,3 +114,4 @@ def get_product_detail(
         "bao_quan": paint_type.bao_quan,
         "images": image_paths
     }
+

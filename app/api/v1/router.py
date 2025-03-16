@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import auth, users, profile
 from app.api.v1.endpoints import products
 from app.api.v1.endpoints import images
+from app.api.v1.endpoints import paint_type_management
 
 api_router = APIRouter()
 
@@ -12,6 +13,7 @@ api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(profile.router, prefix="/profile", tags=["profile"])
 api_router.include_router(products.router, prefix="/products", tags=["products"])
 api_router.include_router(images.router, prefix="/images", tags=["images"])
+api_router.include_router(paint_type_management.router, prefix="/paint-types", tags=["paint-types"])
 # Thêm router cho các endpoints khác khi cần
 # api_router.include_router(users.router, prefix="/users", tags=["users"])
 # api_router.include_router(items.router, prefix="/items", tags=["items"])

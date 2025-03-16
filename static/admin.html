@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Loại Sơn</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2 {
+            color: #444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 4px;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        button.delete {
+            background-color: #f44336;
+        }
+        button.edit {
+            background-color: #2196F3;
+        }
+        form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 100px;
+        }
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+        .success {
+            color: green;
+            margin-bottom: 10px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .active-badge {
+            background-color: #4CAF50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .inactive-badge {
+            background-color: #f44336;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+    
+</head>
+<body>
+
+    <div class="admin-header">
+        <h1>Quản Lý Loại Sơn</h1>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+                <div id="userName">Admin</div>
+                <button id="logoutBtn" class="logout-btn">Đăng xuất</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="message" class="hidden"></div>
+    
+    <div id="formContainer">
+        <h2 id="formTitle">Thêm Loại Sơn Mới</h2>
+        <form id="paintTypeForm">
+            <div class="form-group">
+                <label for="paintTypeId">ID (để trống để tự động tạo):</label>
+                <input type="number" id="paintTypeId" min="1" placeholder="Để trống để tự động tạo">
+                <label for="isActive">Trạng thái hoạt động:</label>
+                <select id="isActive" name="isActive">
+                    <option value="true">Đang hoạt động</option>
+                    <option value="false">Ngừng hoạt động</option>
+                </select>
+                
+            </div>
+            
+            <label for="paintType">Tên Loại Sơn:</label>
+            <input type="text" id="paintType" name="paintType" required>
+            
+            <label for="moTaSanPham">Mô Tả Sản Phẩm:</label>
+            <textarea id="moTaSanPham" name="moTaSanPham" required></textarea>
+            
+            <label for="thanhPhan">Thành Phần:</label>
+            <textarea id="thanhPhan" name="thanhPhan" required></textarea>
+            
+            <label for="huongDanSuDung">Hướng Dẫn Sử Dụng:</label>
+            <textarea id="huongDanSuDung" name="huongDanSuDung" required></textarea>
+            
+            <label for="luuY">Lưu Ý:</label>
+            <textarea id="luuY" name="luuY"></textarea>
+            
+            <label for="baoQuan">Bảo Quản:</label>
+            <textarea id="baoQuan" name="baoQuan" required></textarea>
+            
+            <button type="submit" id="submitBtn">Lưu</button>
+            <button type="button" id="cancelBtn" class="hidden">Hủy</button>
+        </form>
+    </div>
+    
+    <h2>Danh Sách Loại Sơn</h2>
+    <table id="paintTypeTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên Loại Sơn</th>
+                <th>Mô Tả</th>
+                <th>Trạng thái</th>
+                <th>Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody id="paintTypeList">
+            <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
+        </tbody>
+    </table>
+    
+    <script>
+        // Configuration
+        const API_URL = '/api/v1';
+        let token = localStorage.getItem('admin_token') || '';
+        let isEditing = false;
+        let currentUser = null;
+        let authCheckCompleted = false; // Cờ để kiểm soát việc check auth
+        
+        // DOM Elements
+        const paintTypeForm = document.getElementById('paintTypeForm');
+        const paintTypeList = document.getElementById('paintTypeList');
+        const formTitle = document.getElementById('formTitle');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const messageDiv = document.getElementById('message');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        
+        // Form fields
+        const paintTypeId = document.getElementById('paintTypeId');
+        const paintTypeInput = document.getElementById('paintType');
+        const moTaSanPhamInput = document.getElementById('moTaSanPham');
+        const thanhPhanInput = document.getElementById('thanhPhan');
+        const huongDanSuDungInput = document.getElementById('huongDanSuDung');
+        const luuYInput = document.getElementById('luuY');
+        const baoQuanInput = document.getElementById('baoQuan');
+        
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const manualId = document.getElementById('paintTypeId').value.trim();
+            
+            const paintTypeData = {
+                paint_type: paintTypeInput.value,
+                mo_ta_san_pham: moTaSanPhamInput.value,
+                thanh_phan: thanhPhanInput.value,
+                huong_dan_su_dung: huongDanSuDungInput.value,
+                luu_y: luuYInput.value || null,
+                bao_quan: baoQuanInput.value
+            };
+            
+            // Thêm ID thủ công nếu người dùng nhập
+            if (manualId && !isEditing) {
+                try {
+                    // Kiểm tra ID đã tồn tại chưa
+                    const checkResponse = await fetch(`${API_URL}/paint-types/${manualId}`);
+                    if (checkResponse.ok) {
+                        // ID đã tồn tại
+                        showMessage(`ID ${manualId} đã tồn tại trong database, không thể sử dụng ID này`, 'error');
+                        return;
+                    }
+                } catch (error) {
+                    // Lỗi 404 là bình thường, nghĩa là ID không tồn tại và có thể sử dụng
+                    if (!error.message.includes('404')) {
+                        showMessage(`Lỗi kiểm tra ID: ${error.message}`, 'error');
+                        return;
+                    }
+                }
+            }
+            
+            try {
+                let response;
+                let url;
+                let method;
+                
+                if (isEditing) {
+                    // Update existing paint type
+                    url = `${API_URL}/paint-types/${paintTypeId.value}`;
+                    method = 'PUT';
+                } else if (manualId) {
+                    // Tạo mới với ID tùy chỉnh - sử dụng endpoint đặc biệt
+                    url = `${API_URL}/paint-types/with-id/${manualId}`;
+                    method = 'POST';
+                } else {
+                    // Tạo mới với ID tự động
+                    url = `${API_URL}/paint-types`;
+                    method = 'POST';
+                }
+                
+                response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(paintTypeData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Lỗi khi lưu dữ liệu');
+                }
+                
+                const result = await response.json();
+                showMessage(`Đã ${isEditing ? 'cập nhật' : 'thêm'} loại sơn thành công`, 'success');
+                resetForm();
+                loadPaintTypes();
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chỉ gọi checkAuth() một lần khi trang tải
+            checkAuth().then(() => {
+                // Chỉ tải dữ liệu nếu xác thực thành công
+                if (authCheckCompleted) {
+                    loadPaintTypes();
+                }
+            });
+        });
+
+        // // Event Listeners
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     loadPaintTypes();
+        //     checkAuth();
+        // });
+        
+        paintTypeForm.addEventListener('submit', handleFormSubmit);
+        cancelBtn.addEventListener('click', resetForm);
+        logoutBtn.addEventListener('click', logout);
+        
+        // Functions
+        async function checkAuth() {
+            if (!token) {
+                // Chuyển hướng đến trang đăng nhập
+                window.location.href = '/admin-login';
+                return;
+            }
+            
+            try {
+                // Kiểm tra token và lấy thông tin người dùng
+                const response = await fetch(`${API_URL}/users/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Token không hợp lệ');
+                }
+                
+                currentUser = await response.json();
+                
+                // Kiểm tra quyền admin
+                if (!currentUser.admin) {
+                    throw new Error('Không có quyền admin');
+                }
+                
+                // Hiển thị thông tin người dùng
+                updateUserInfo(currentUser);
+                authCheckCompleted = true; // Đánh dấu đã hoàn thành kiểm tra xác thực
+                
+            } catch (error) {
+                console.error('Lỗi xác thực:', error);
+                localStorage.removeItem('admin_token');
+                window.location.href = '/admin-login';
+            }
+        }
+
+        
+
+        
+        async function loadPaintTypes() {
+            try {
+                const response = await fetch(`${API_URL}/paint-types`);
+                if (!response.ok) throw new Error('Không thể tải dữ liệu');
+                
+                const paintTypes = await response.json();
+                displayPaintTypes(paintTypes);
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Gọi API đăng nhập
+                const response = await fetch(`${API_URL}/auth/login/json`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        so_dien_thoai: phone,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Lưu token tạm thời để kiểm tra quyền admin
+                    const tempToken = data.access_token;
+                    
+                    // Kiểm tra xem người dùng có phải admin không
+                    const adminCheck = await checkAdminRole(tempToken);
+                    
+                    if (adminCheck) {
+                        // Lưu token chính thức nếu là admin
+                        localStorage.setItem('admin_token', tempToken);
+                        
+                        // Chuyển hướng đến trang admin
+                        window.location.href = '/admin';
+                    } else {
+                        showError('Tài khoản không có quyền quản trị');
+                    }
+                } else {
+                    // Hiển thị lỗi
+                    showError(data.detail || 'Đăng nhập thất bại');
+                }
+            } catch (error) {
+                showError('Lỗi hệ thống, vui lòng thử lại sau');
+                console.error(error);
+            }
+        });
+
+
+        async function checkAdminRole(token) {
+            try {
+                const response = await fetch(`${API_URL}/users/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    return userData.admin; // Trả về true nếu là admin
+                }
+                
+                return false;
+                
+            } catch (error) {
+                console.error('Lỗi kiểm tra quyền admin:', error);
+                return false;
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function updateUserInfo(user) {
+            if (user) {
+                userName.textContent = user.ho_ten || 'Admin';
+                if (user.ho_ten) {
+                    userAvatar.textContent = user.ho_ten.charAt(0).toUpperCase();
+                }
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('admin_token');
+            window.location.href = '/admin-login';
+        }
+        
+        async function loadPaintTypes() {
+            try {
+                const response = await fetch(`${API_URL}/paint-types`);
+                if (!response.ok) throw new Error('Không thể tải dữ liệu');
+                
+                const paintTypes = await response.json();
+                displayPaintTypes(paintTypes);
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayPaintTypes(paintTypes) {
+            paintTypeList.innerHTML = '';
+            
+            paintTypes.forEach(pt => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pt.id}</td>
+                    <td>${pt.paint_type}</td>
+                    <td>${truncateText(pt.mo_ta_san_pham, 50)}</td>
+                    <td>
+                        <span class="${pt.is_active ? 'active-badge' : 'inactive-badge'}">
+                            ${pt.is_active ? 'Hoạt động' : 'Đã khóa'}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <button class="edit" data-id="${pt.id}">Sửa</button>
+                        <button class="delete" data-id="${pt.id}">Xóa</button>
+                        <button class="view" data-id="${pt.id}">Xem</button>
+                        <button class="toggle-active" data-id="${pt.id}" data-active="${pt.is_active}">
+                            ${pt.is_active ? 'Khóa' : 'Mở khóa'}
+                        </button>
+                    </td>
+                `;
+                
+                paintTypeList.appendChild(row);
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.edit').forEach(btn => {
+                btn.addEventListener('click', () => editPaintType(btn.dataset.id));
+            });
+            
+            document.querySelectorAll('.delete').forEach(btn => {
+                btn.addEventListener('click', () => deletePaintType(btn.dataset.id));
+            });
+            
+            document.querySelectorAll('.view').forEach(btn => {
+                btn.addEventListener('click', () => viewPaintType(btn.dataset.id));
+            });
+
+            document.querySelectorAll('.toggle-active').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    const currentActive = btn.dataset.active === 'true';
+                    togglePaintTypeActive(id, currentActive);
+                });
+            });
+        }
+        
+
+        async function togglePaintTypeActive(id, currentActive) {
+            try {
+                const response = await fetch(`${API_URL}/paint-types/${id}/toggle-active`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Lỗi khi cập nhật trạng thái');
+                }
+                
+                await loadPaintTypes();
+                showMessage(`Đã ${currentActive ? 'khóa' : 'mở khóa'} loại sơn thành công`, 'success');
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const manualId = document.getElementById('paintTypeId').value.trim();
+            
+            const paintTypeData = {
+                paint_type: paintTypeInput.value,
+                mo_ta_san_pham: moTaSanPhamInput.value,
+                thanh_phan: thanhPhanInput.value,
+                huong_dan_su_dung: huongDanSuDungInput.value,
+                luu_y: luuYInput.value || null,
+                bao_quan: baoQuanInput.value,
+                is_active: document.getElementById('isActive').value === 'true'
+            };
+            
+            if (manualId && !isEditing) {
+                try {
+                    // Kiểm tra ID đã tồn tại chưa
+                    const checkResponse = await fetch(`${API_URL}/paint-types/${manualId}`);
+                    if (checkResponse.ok) {
+                        // ID đã tồn tại
+                        showMessage(`ID ${manualId} đã tồn tại trong database, không thể sử dụng ID này`, 'error');
+                        return;
+                    }
+                } catch (error) {
+                    // Lỗi 404 là bình thường, nghĩa là ID không tồn tại và có thể sử dụng
+                    if (!error.message.includes('404')) {
+                        showMessage(`Lỗi kiểm tra ID: ${error.message}`, 'error');
+                        return;
+                    }
+                }
+            }
+    
+            try {
+                let response;
+                let url;
+                let method;
+                
+                if (isEditing) {
+                    // Update existing paint type
+                    url = `${API_URL}/paint-types/${paintTypeId.value}`;
+                    method = 'PUT';
+                } else if (manualId) {
+                    // Tạo mới với ID tùy chỉnh - sử dụng endpoint đặc biệt
+                    url = `${API_URL}/paint-types/with-id/${manualId}`;
+                    method = 'POST';
+                } else {
+                    // Tạo mới với ID tự động
+                    url = `${API_URL}/paint-types`;
+                    method = 'POST';
+                }
+                
+                response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(paintTypeData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Lỗi khi lưu dữ liệu');
+                }
+                
+                const result = await response.json();
+                showMessage(`Đã ${isEditing ? 'cập nhật' : 'thêm'} loại sơn thành công`, 'success');
+                resetForm();
+                loadPaintTypes();
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+        
+        function resetForm() {
+        paintTypeForm.reset();
+        document.getElementById('paintTypeId').value = '';
+        isEditing = false;
+        formTitle.textContent = 'Thêm Loại Sơn Mới';
+        submitBtn.textContent = 'Lưu';
+        cancelBtn.classList.add('hidden');
+}
+
+        async function editPaintType(id) {
+            try {
+                const response = await fetch(`${API_URL}/paint-types/${id}`);
+                if (!response.ok) throw new Error('Không thể tải dữ liệu');
+                
+                const paintType = await response.json();
+                
+                // Fill form with paint type data
+                paintTypeId.value = paintType.id;
+                paintTypeInput.value = paintType.paint_type;
+                moTaSanPhamInput.value = paintType.mo_ta_san_pham;
+                thanhPhanInput.value = paintType.thanh_phan;
+                huongDanSuDungInput.value = paintType.huong_dan_su_dung;
+                luuYInput.value = paintType.luu_y || '';
+                baoQuanInput.value = paintType.bao_quan;
+                document.getElementById('isActive').value = paintType.is_active.toString();
+                
+                // Switch to edit mode
+                isEditing = true;
+                formTitle.textContent = 'Chỉnh Sửa Loại Sơn';
+                submitBtn.textContent = 'Cập Nhật';
+                cancelBtn.classList.remove('hidden');
+                
+                // Scroll to form
+                formTitle.scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+        
+        async function viewPaintType(id) {
+            try {
+                const response = await fetch(`${API_URL}/paint-types/${id}`);
+                if (!response.ok) throw new Error('Không thể tải dữ liệu');
+                
+                const paintType = await response.json();
+                
+                // Just display the data in an alert for simplicity
+                // In a real application, you would show this in a modal
+                alert(`
+                    ID: ${paintType.id}
+                    Tên: ${paintType.paint_type}
+                    
+                    MÔ TẢ SẢN PHẨM:
+                    ${paintType.mo_ta_san_pham}
+                    
+                    THÀNH PHẦN:
+                    ${paintType.thanh_phan}
+                    
+                    HƯỚNG DẪN SỬ DỤNG:
+                    ${paintType.huong_dan_su_dung}
+                    
+                    LƯU Ý:
+                    ${paintType.luu_y || 'Không có'}
+                    
+                    BẢO QUẢN:
+                    ${paintType.bao_quan}
+                `);
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+        
+        async function deletePaintType(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa loại sơn này? Điều này sẽ xóa tất cả sản phẩm liên quan.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/paint-types/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status !== 204) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Lỗi khi xóa');
+                    }
+                }
+                
+                showMessage('Đã xóa loại sơn thành công', 'success');
+                loadPaintTypes();
+            } catch (error) {
+                showMessage(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+        
+        function resetForm() {
+            paintTypeForm.reset();
+            paintTypeId.value = '';
+            isEditing = false;
+            formTitle.textContent = 'Thêm Loại Sơn Mới';
+            submitBtn.textContent = 'Lưu';
+            cancelBtn.classList.add('hidden');
+        }
+        
+        function showMessage(message, type) {
+            messageDiv.textContent = message;
+            messageDiv.className = type;
+            messageDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 5000);
+        }
+        
+        function truncateText(text, maxLength) {
+            if (!text) return '';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+    </script>
+</body>
+</html>

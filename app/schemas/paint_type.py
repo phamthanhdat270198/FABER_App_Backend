@@ -8,6 +8,7 @@ class PaintTypeBase(BaseModel):
     huong_dan_su_dung: str = ""
     luu_y: Optional[str] = None
     bao_quan: str = ""
+    is_active: bool = True
 
 class PaintTypeCreate(PaintTypeBase):
     pass
@@ -19,6 +20,7 @@ class PaintTypeUpdate(BaseModel):
     huong_dan_su_dung: Optional[str] = None
     luu_y: Optional[str] = None
     bao_quan: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class PaintTypeResponse(PaintTypeBase):
     id: int
