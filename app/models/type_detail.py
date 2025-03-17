@@ -26,6 +26,12 @@ class TypeDetail(Base):
 
     # Relationship với ImageResource
     images = relationship("ImageResource", back_populates="type_detail", cascade="all, delete-orphan")
-    #
+    
+    # Relationship với Thumbnail 
+    # thumbnails = relationship("Thumbnail", back_populates="type_detail", cascade="all, delete-orphan")
+    thumbnails = relationship("app.models.thumbnail.Thumbnail", back_populates="type_detail", cascade="all, delete-orphan")
+
+
     def __repr__(self):
         return f"<TypeDetail(id={self.id}, product='{self.product}', paint_type_id={self.paint_type_id})>"
+        

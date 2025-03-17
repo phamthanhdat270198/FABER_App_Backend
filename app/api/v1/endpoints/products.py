@@ -8,7 +8,8 @@ from app.db.base import get_db
 from app.models.type_detail import TypeDetail
 from app.models.paint_type import PaintType
 from app.models.image_resource import ImageResource
-from app.schemas.products import PaintTypeListResponse, PaintTypeItem, ProductListResponse, ProductItem, ProductDetailResponse
+from app.models.thumbnail import Thumbnail
+from app.schemas.products import PaintTypeListResponse, PaintTypeItem, ProductListResponse, ProductItem, ProductDetailResponse, ProductDetailAsVolumeResponse
 
 router = APIRouter()
 
@@ -71,6 +72,91 @@ def get_products_by_paint_type(
         "products": result
     }
 
+# @router.get("/detail/{product_id}", response_model=ProductDetailResponse)
+# def get_product_detail(
+#     product_id: int = Path(..., title="ID của sản phẩm", ge=1),
+#     db: Session = Depends(get_db)
+# ):
+#     """
+#     API 3: Lấy chi tiết đầy đủ của một sản phẩm
+#     """
+#     # Lấy thông tin sản phẩm
+#     product = db.query(TypeDetail).filter(TypeDetail.id == product_id).first()
+    
+#     if not product:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Không tìm thấy sản phẩm"
+#         )
+    
+#     # Lấy thông tin loại sơn
+#     paint_type = db.query(PaintType).filter(PaintType.id == product.paint_type_id).first()
+    
+#     # Lấy tất cả ảnh của sản phẩm
+#     images = db.query(ImageResource).filter(ImageResource.type_detail_id == product_id).all()
+#     image_paths = [img.image_path for img in images]
+    
+#     # Tạo response
+#     return {
+#         "id": product.id,
+#         "product_name": product.product,
+#         "code": product.code,
+#         "package": product.package,
+#         "volume": product.volume,
+#         "price": product.price,
+#         "m2_cover": product.m2_cover,
+#         "promotion": product.promotion,
+#         "paint_type_id": paint_type.id,
+#         "paint_type_name": paint_type.paint_type,
+#         "mo_ta_san_pham": paint_type.mo_ta_san_pham,
+#         "thanh_phan": paint_type.thanh_phan,
+#         "huong_dan_su_dung": paint_type.huong_dan_su_dung,
+#         "luu_y": paint_type.luu_y,
+#         "bao_quan": paint_type.bao_quan,
+#         "images": image_paths
+#     }
+
+@router.get("/detail/{product_id}/{volume}", response_model=ProductDetailAsVolumeResponse)
+def get_product_detail(
+    product_id: int = Path(..., title="ID của sản phẩm", ge=1),
+    volume: float = Path(..., title="Thể tích sản phẩm"),
+    db: Session = Depends(get_db)
+):
+    """
+    API 4: Lấy chi tiết của một sản phẩm theo product id và volume
+    """
+    # Lấy thông tin sản phẩm
+    product = db.query(TypeDetail).filter(TypeDetail.id == product_id, TypeDetail.volume == volume).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy sản phẩm"
+        )
+    
+    # Lấy thông tin loại sơn
+    paint_type = db.query(PaintType).filter(PaintType.id == product.paint_type_id).first()
+    
+    # Lấy tất cả ảnh của sản phẩm
+    images = db.query(ImageResource).filter(ImageResource.type_detail_id == product_id).all()
+
+    image_paths = [img.image_path for img in images]
+
+    thumbnails = db.query(Thumbnail).filter(Thumbnail.type_detail_id == product_id).all()
+    image_paths = [img.image_path for img in images]
+    thumbnail_paths = [thumb.path_to_thumbnail for thumb in thumbnails]
+    
+    # Tạo response
+    return {
+        "id": product.id,
+        "product_name": product.product,
+        "volume": product.volume,
+        "price": product.price,
+        "cost" : product.code,
+        "images": image_paths,
+        "thumbnails": thumbnail_paths
+    }
+
 @router.get("/detail/{product_id}", response_model=ProductDetailResponse)
 def get_product_detail(
     product_id: int = Path(..., title="ID của sản phẩm", ge=1),
@@ -114,4 +200,3 @@ def get_product_detail(
         "bao_quan": paint_type.bao_quan,
         "images": image_paths
     }
-

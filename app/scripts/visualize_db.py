@@ -420,16 +420,77 @@ def show_product_images():
     finally:
         db.close()
 
+def show_product_thumbnail():
+    db = SessionLocal()
+    try:
+        # Lấy tất cả sản phẩm với thumbnails
+        products = db.query(TypeDetail).options(joinedload(TypeDetail.thumbnails)).all()
+        
+        if not products:
+            print("Không có sản phẩm trong database.")
+            return
+        
+        # Hiển thị thống kê
+        total_thumbnails = sum(len(product.thumbnails) for product in products)
+        products_with_thumbnails = sum(1 for product in products if product.thumbnails)
+        
+        print(f"\n=== THỐNG KÊ ẢNH THUMBNAIL SẢN PHẨM ===")
+        print(f"Tổng số sản phẩm: {len(products)}")
+        print(f"Sản phẩm có thumbnail: {products_with_thumbnails}")
+        print(f"Tổng số thumbnail: {total_thumbnails}")
+        print(f"Trung bình: {total_thumbnails / len(products):.1f} thumbnail/sản phẩm")
+        
+        # Hiển thị danh sách tất cả các sản phẩm
+        headers = ["ID", "Sản phẩm", "Mã", "Số lượng thumbnail"]
+        rows = []
+        
+        for product in products:
+            rows.append([
+                product.id,
+                product.product,
+                product.code,
+                len(product.thumbnails)
+            ])
+        
+        print("\n=== DANH SÁCH SẢN PHẨM VÀ SỐ LƯỢNG THUMBNAIL ===")
+        print(tabulate(rows, headers=headers, tablefmt="pretty"))
+        
+        # Hỏi người dùng có muốn xem chi tiết từng sản phẩm không
+        show_details = input("\nBạn có muốn xem chi tiết thumbnail của từng sản phẩm không? (y/n): ")
+        
+        if show_details.lower() == 'y':
+            for product in products:
+                if not product.thumbnails:
+                    continue
+                    
+                print(f"\n=== THUMBNAIL CỦA SẢN PHẨM: {product.product} (ID: {product.id}) ===")
+                
+                thumbnail_headers = ["ID", "Đường dẫn thumbnail"]
+                thumbnail_rows = []
+                
+                for thumbnail in product.thumbnails:
+                    thumbnail_rows.append([
+                        thumbnail.id,
+                        thumbnail.path_to_thumbnail
+                    ])
+                
+                print(tabulate(thumbnail_rows, headers=thumbnail_headers, tablefmt="pretty"))
+        
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
         # show_users()
         # show_orders()
-        show_paint_types()
-        # show_image_resources()
+        # show_paint_types()
+        show_image_resources()
         # show_type_details()
+        
         # show_order_details()
         # show_token_store()
         # show_product_images()
+        # show_product_thumbnail()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback

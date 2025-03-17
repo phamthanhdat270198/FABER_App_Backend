@@ -44,3 +44,14 @@ class ProductDetailResponse(BaseModel):
     
     # Danh sách đường dẫn ảnh
     images: List[str] = []
+
+class ProductDetailAsVolumeResponse(BaseModel):
+    id: int
+    product_name: str
+    code: Optional[str] = None
+    volume: Optional[float] = None
+    price: Optional[float] = None
+
+    # Danh sách đường dẫn ảnh
+    images: List[str] = []
+    thumbnails: List[str] = []

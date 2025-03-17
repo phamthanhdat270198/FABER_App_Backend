@@ -21,6 +21,9 @@ from app.models.image_resource import ImageResource
 from app.models.type_detail import TypeDetail
 from app.models.order_detail import OrderDetail
 from app.models.token_store import TokenStore
+from app.models.thumbnail import Thumbnail
+import shutil
+from pathlib import Path
 from alembic import op
 
 
@@ -501,6 +504,89 @@ def seed_token_store():
     finally:
         db.close()
 
+def seed_thumbnail_data():
+    db = SessionLocal()
+    try:
+        # Lấy tất cả sản phẩm từ database
+        products = db.query(TypeDetail).all()
+        
+        if not products:
+            print("Không có sản phẩm trong database.")
+            return
+        
+        # Tạo thư mục lưu trữ thumbnail nếu chưa tồn tại
+        thumbnails_dir = Path(root_dir) / "static" / "thumbnails"
+        thumbnails_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Các mẫu tên file ảnh giả lập
+        sample_image_names = [
+            "product_thumbnail_1.jpg",
+            "product_thumbnail_2.png",
+            "product_image_small.jpg",
+            "product_preview.png",
+            "thumbnail_preview.jpg",
+            "small_preview.png",
+            "color_sample.jpg",
+            "product_detail.png",
+            "paint_sample.jpg",
+            "color_palette.png"
+        ]
+        
+        # Thêm thumbnail cho mỗi sản phẩm
+        thumbnails_added = 0
+        
+        for product in products:
+            # Kiểm tra xem sản phẩm đã có thumbnail chưa
+            existing_thumbnail = db.query(Thumbnail).filter(Thumbnail.type_detail_id == product.id).first()
+            
+            if not existing_thumbnail:
+                # Chọn ngẫu nhiên một tên file
+                image_name = random.choice(sample_image_names)
+                
+                # Tạo đường dẫn giả lập
+                path_to_thumbnail = f"/static/thumbnails/{product.code}_{image_name}" if product.code else f"/static/thumbnails/product_{product.id}_{image_name}"
+                
+                # Tạo bản ghi trong database mà không cần tạo file thực
+                thumbnail = Thumbnail(
+                    type_detail_id=product.id,
+                    path_to_thumbnail=path_to_thumbnail
+                )
+                db.add(thumbnail)
+                thumbnails_added += 1
+                
+                # Thêm nhiều hơn một thumbnail cho một số sản phẩm ngẫu nhiên
+                if random.random() < 0.3:  # 30% xác suất thêm thumbnail thứ hai
+                    image_name2 = random.choice(sample_image_names)
+                    while image_name2 == image_name:  # Đảm bảo không trùng tên
+                        image_name2 = random.choice(sample_image_names)
+                        
+                    path_to_thumbnail2 = f"/static/thumbnails/{product.code}_alt_{image_name2}" if product.code else f"/static/thumbnails/product_{product.id}_alt_{image_name2}"
+                    
+                    thumbnail2 = Thumbnail(
+                        type_detail_id=product.id,
+                        path_to_thumbnail=path_to_thumbnail2
+                    )
+                    db.add(thumbnail2)
+                    thumbnails_added += 1
+        
+        db.commit()
+        print(f"Đã thêm {thumbnails_added} thumbnail cho các sản phẩm.")
+        
+        # Hiển thị một số thống kê
+        products_with_thumbnails = db.query(TypeDetail).join(Thumbnail).distinct().count()
+        total_thumbnails = db.query(Thumbnail).count()
+        
+        print(f"Số sản phẩm có thumbnail: {products_with_thumbnails}/{len(products)}")
+        print(f"Tổng số thumbnail: {total_thumbnails}")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"Lỗi khi thêm thumbnail: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
         print("Bắt đầu khởi tạo database...")
@@ -508,10 +594,11 @@ if __name__ == "__main__":
         # seed_data()
         # seed_paint_type()
         # seed_image()
-        # seed_product_images()
+        seed_product_images()
         # seed_type_detail()
-        seed_order_detail()
+        # seed_order_detail()
         # seed_token_store()
+        # seed_thumbnail_data()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")
