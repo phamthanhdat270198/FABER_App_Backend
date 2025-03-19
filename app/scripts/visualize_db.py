@@ -187,12 +187,13 @@ def show_type_details():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi", "is active"]
+        headers = ["ID", "ID PT", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi", "is active"]
         rows = []
         
         for detail in type_details:
             rows.append([
                 detail.id,
+                detail.paint_type.id,
                 detail.paint_type.paint_type if detail.paint_type else "N/A",
                 detail.product,
                 detail.code,
@@ -484,8 +485,8 @@ if __name__ == "__main__":
         # show_users()
         # show_orders()
         # show_paint_types()
-        show_image_resources()
-        # show_type_details()
+        # show_image_resources()
+        show_type_details()
         
         # show_order_details()
         # show_token_store()
