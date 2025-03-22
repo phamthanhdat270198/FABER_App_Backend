@@ -207,25 +207,31 @@ def get_product_detail(
             "promotion": prod.promotion,
             "images": image_paths,
             "thumbnails": thumbnail_paths,
-            "is_current": (prod.id == product_id)  # Đánh dấu sản phẩm hiện tại
+            "is_current": (prod.id == product_id),  # Đánh dấu sản phẩm hiện tại
+            "features": prod.features
         })
     
     # Nhóm các phiên bản theo volume
     volume_groups = {}
     for variant in all_variants:
+        print("variant == ", variant)
         volume = variant.get("volume")
         if volume not in volume_groups:
             volume_groups[volume] = []
-        volume_groups[volume].append(variant)
+        volume_groups[volume] =  variant
     
+    print("volume groups == ", volume_groups)
     # Chuyển đổi dict thành list và sắp xếp theo volume
     grouped_variants = []
     for volume, variants in sorted(volume_groups.items(), key=lambda x: x[0] if x[0] is not None else 0):
+        print("volume = ", volume)
+        print("variants = ", variants)
         grouped_variants.append({
             "volume": volume,
             "variants": variants
         })
     
+    print("group variants = ", grouped_variants )
     # Tạo response
     return {
         "id": product.id,

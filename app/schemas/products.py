@@ -68,10 +68,11 @@ class ProductVariant(BaseModel):
     images: List[str] = []
     thumbnails: List[str] = []
     is_current: bool = False
+    features: str
 
 class VolumeGroup(BaseModel):
     volume: Optional[float] = None
-    variants: List[ProductVariant] = []
+    variants: ProductVariant 
 
 class ProductDetailGroupedResponse(BaseModel):
     id: int

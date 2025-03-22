@@ -1,4 +1,3 @@
-# add_created_date_sqlite.py
 import os
 import sys
 import sqlite3

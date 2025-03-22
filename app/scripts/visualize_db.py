@@ -187,7 +187,7 @@ def show_type_details():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "ID PT", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi", "is active"]
+        headers = ["ID", "ID PT", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi" ,"is active", "Tính năng"]
         rows = []
         
         for detail in type_details:
@@ -202,7 +202,8 @@ def show_type_details():
                 f"{detail.price:,.0f} VNĐ" if detail.price else "N/A",
                 f"{detail.m2_cover:.1f}" if detail.m2_cover else "N/A",
                 detail.promotion or "Không có",
-                detail.is_active
+                detail.is_active,
+                detail.features
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng

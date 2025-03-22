@@ -11,6 +11,7 @@ app = FastAPI(
     title="Paint App API",
     description="API cho ứng dụng bán sơn",
     version="1.0.0",
+
 )
 
 # Cấu hình CORS
@@ -55,3 +56,5 @@ async def admin_page():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+    # uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+# 

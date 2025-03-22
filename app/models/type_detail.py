@@ -18,6 +18,7 @@ class TypeDetail(Base):
     base64 = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
+    features = Column(String, nullable=True)
     # Relationship với PaintType
     paint_type = relationship("PaintType", back_populates="type_details")
     
