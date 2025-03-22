@@ -190,11 +190,13 @@ def get_product_detail(
     for prod in all_products:
         # Lấy ảnh của sản phẩm này
         images = db.query(ImageResource).filter(ImageResource.type_detail_id == prod.id).all()
-        image_paths = [img.image_path for img in images]
+        # image_paths = [img.image_path for img in images]
+        image_paths = images[0].image_path
         
         # Lấy thumbnails của sản phẩm này
         thumbnails = db.query(Thumbnail).filter(Thumbnail.type_detail_id == prod.id).all()
-        thumbnail_paths = [thumb.path_to_thumbnail for thumb in thumbnails]
+        # thumbnail_paths = [thumb.path_to_thumbnail for thumb in thumbnails]
+        thumbnail_paths = thumbnails[0].path_to_thumbnail
         
         all_variants.append({
             "id": prod.id,

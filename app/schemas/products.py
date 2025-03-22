@@ -65,8 +65,8 @@ class ProductVariant(BaseModel):
     price: Optional[float] = None
     m2_cover: Optional[float] = None
     promotion: Optional[str] = None
-    images: List[str] = []
-    thumbnails: List[str] = []
+    images: str
+    thumbnails: str
     is_current: bool = False
     features: str
 
