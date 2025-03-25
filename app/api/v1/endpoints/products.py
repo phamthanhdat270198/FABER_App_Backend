@@ -101,7 +101,6 @@ def get_product_detail(
     image_paths = [img.image_path for img in images]
 
     thumbnails = db.query(Thumbnail).filter(Thumbnail.type_detail_id == product_id).all()
-    image_paths = [img.image_path for img in images]
     thumbnail_paths = [thumb.path_to_thumbnail for thumb in thumbnails]
     
     # Tạo response

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey
+from sqlalchemy import Column, Integer, Float, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from app.models.base import Base
@@ -10,7 +10,7 @@ class OrderDetail(Base):
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     type_detail_id = Column(Integer, ForeignKey("type_details.id"), nullable=False)
     quantity = Column(Integer, nullable=False, default=1)
-    total_amount = Column(Float, nullable=False)
+    color_code = Column(String, nullable=True)
     
     # Relationship với Order
     order = relationship("Order", back_populates="order_details")
