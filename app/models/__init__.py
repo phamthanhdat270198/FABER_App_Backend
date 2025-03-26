@@ -9,4 +9,4 @@ from app.models.thumbnail import Thumbnail
 from app.models.token_store import TokenStore
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
-
+from app.models.contact import ContactInquiry
