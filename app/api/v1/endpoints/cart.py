@@ -181,6 +181,7 @@ def remove_cart_item(
 def update_cart_item_quantity(
     item_id: int,
     quantity: int,
+    color_code: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -216,7 +217,8 @@ def update_cart_item_quantity(
         )
     
     # Cập nhật số lượng
-    cart_item.quantity = quantity
+    cart_item.quantity += quantity
+    cart_item.color_code = color_code
     db.commit()
     db.refresh(cart_item)
     
