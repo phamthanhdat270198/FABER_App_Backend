@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class CartItemCreate(BaseModel):
     product_id: int
@@ -29,5 +30,18 @@ class CartItemThumbnailResponse(BaseModel):
     thumbnail: str
     reward: int
 
+    class Config:
+        orm_mode = True
+
+class OrderCreate(BaseModel):
+    cart_item_ids: List[int]
+
+class OrderResponse(BaseModel):
+    message: str
+    items_count: int
+    total_amount: float
+    reward_points_earned: float
+    total_reward_points: float
+    
     class Config:
         orm_mode = True
