@@ -8,7 +8,7 @@ from app.models.cart import Cart
 from app.models.cart_items import CartItem
 from app.models.type_detail import TypeDetail
 from app.models.thumbnail import Thumbnail
-from app.schemas.cart_items import OrderCreate, OrderResponse
+from app.schemas.cart_items import OrderCreate, OrderResponse, DeleteIDCart
 from app.models.user import User
 from app.db.base import get_db
 from app.api.deps import get_current_active_user
@@ -140,39 +140,34 @@ def get_cart_items(
     
     return result
 
-@router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/detete", status_code=status.HTTP_204_NO_CONTENT)
 def remove_cart_item(
-    item_id: int,
+    delete_ids: DeleteIDCart,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    # Tìm giỏ hàng hiện tại của người dùng
-    cart = db.query(Cart).filter(
-        Cart.user_id == current_user.id,
-        Cart.is_active == True
-    ).first()
-    
-    if not cart:
+    if not delete_ids.delete_ids or len(delete_ids.delete_ids) == 0:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Giỏ hàng không tồn tại"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Không có sản phẩm nào được chọn để xóa"
         )
     
-    # Tìm sản phẩm cần xóa
-    cart_item = db.query(CartItem).filter(
-        CartItem.id == item_id,
-        CartItem.cart_id == cart.id,
+    # Lấy các mặt hàng từ giỏ hàng của user hiện tại
+    cart_items = db.query(CartItem).join(Cart).filter(
+        Cart.user_id == current_user.id,
+        CartItem.id.in_(delete_ids.delete_ids),
         CartItem.is_active == True
-    ).first()
+    ).all()
     
-    if not cart_item:
+    if not cart_items:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Sản phẩm với id {item_id} không tồn tại trong giỏ hàng"
+            detail="Không tìm thấy sản phẩm cần xóa nào trong giỏ hàng của bạn"
         )
     
     # Xóa mềm sản phẩm khỏi giỏ hàng
-    cart_item.is_active = False
+    for cart_item in cart_items:
+        cart_item.is_active = False
     db.commit()
     
     return None

@@ -32,6 +32,8 @@ class CartItemThumbnailResponse(BaseModel):
 
     class Config:
         orm_mode = True
+class DeleteIDCart(BaseModel):
+    delete_ids: List[int]
 
 class OrderCreate(BaseModel):
     cart_item_ids: List[int]
