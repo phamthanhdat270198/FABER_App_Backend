@@ -438,14 +438,14 @@ def show_cart_database():
         if show_details.lower() == 'y':
             for cart in carts:
                 user = db.query(User).filter(User.id == cart.user_id).first()
-                active_cart_items = [item for item in cart.cart_items if item.is_active]
+                active_cart_items = [item for item in cart.cart_items]# if item.is_active]
                 
                 if not active_cart_items:
                     continue
                 
                 print(f"\n=== CHI TIẾT GIỎ HÀNG CỦA: {user.ho_ten if user else 'Unknown'} (ID: {cart.id}) ===")
                 
-                item_headers = ["ID", "Sản phẩm", "Mã màu", "Dung tích", "Số lượng", "Đơn giá", "Thành tiền"]
+                item_headers = ["ID", "Sản phẩm", "Mã màu", "Dung tích", "Số lượng", "Đơn giá", "Thành tiền", "is active"]
                 item_rows = []
                 
                 for item in active_cart_items:
@@ -460,7 +460,8 @@ def show_cart_database():
                         f"{item.volume:.1f}L" if item.volume else "N/A",
                         item.quantity,
                         f"{price:,.0f} VND",
-                        f"{total:,.0f} VND"
+                        f"{total:,.0f} VND",
+                        item.is_active
                     ])
                 
                 print(tabulate(item_rows, headers=item_headers, tablefmt="pretty"))
@@ -474,7 +475,7 @@ if __name__ == "__main__":
         # show_orders()
         # show_paint_types()
         # show_image_resources()
-        # show_type_details()
+        show_type_details()
         
         # show_order_details()
         # show_token_store()
