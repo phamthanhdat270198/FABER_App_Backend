@@ -2,11 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from pydantic import BaseModel
+from datetime import datetime
 
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
 from app.models.type_detail import TypeDetail
 from app.models.thumbnail import Thumbnail
+from app.schemas.cart_items import OrderCreate, OrderResponse
 from app.models.user import User
 from app.db.base import get_db
 from app.api.deps import get_current_active_user
@@ -179,6 +181,7 @@ def remove_cart_item(
 def update_cart_item_quantity(
     item_id: int,
     quantity: int,
+    color_code: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -214,7 +217,8 @@ def update_cart_item_quantity(
         )
     
     # Cập nhật số lượng
-    cart_item.quantity = quantity
+    cart_item.quantity += quantity
+    cart_item.color_code = color_code
     db.commit()
     db.refresh(cart_item)
     
@@ -228,4 +232,79 @@ def update_cart_item_quantity(
         quantity=cart_item.quantity,
         product=type_detail.product,
         price=type_detail.price or 0
+    )
+
+@router.post("/place-order", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
+def place_order(
+    order: OrderCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    API đặt hàng:
+    - Chuyển trạng thái các mặt hàng đã chọn trong giỏ hàng sang không hoạt động (is_active = False)
+    - Cộng điểm thưởng cho người dùng
+    """
+    # Kiểm tra nếu không có sản phẩm nào được chọn
+    if not order.cart_item_ids or len(order.cart_item_ids) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Không có sản phẩm nào được chọn để đặt hàng"
+        )
+    
+    # Lấy các mặt hàng từ giỏ hàng của user hiện tại
+    cart_items = db.query(CartItem).join(Cart).filter(
+        Cart.user_id == current_user.id,
+        CartItem.id.in_(order.cart_item_ids),
+        CartItem.is_active == True
+    ).all()
+    
+    # Kiểm tra nếu không tìm thấy sản phẩm nào
+    if not cart_items:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy sản phẩm nào trong giỏ hàng của bạn"
+        )
+    
+    # Kiểm tra xem số lượng sản phẩm tìm được có khớp với số lượng sản phẩm yêu cầu không
+    if len(cart_items) != len(order.cart_item_ids):
+        # Có một số sản phẩm không thuộc giỏ hàng của người dùng hoặc không còn hoạt động
+        found_ids = [item.id for item in cart_items]
+        missing_ids = [id for id in order.cart_item_ids if id not in found_ids]
+        
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Không tìm thấy sản phẩm với id: {missing_ids}"
+        )
+
+    # Tính tổng số tiền và điểm thưởng
+    total_amount = 0
+    items_count = len(cart_items)
+    
+    # Chuyển trạng thái từng mặt hàng sang False
+    for item in cart_items:
+        # Tính giá từ type_detail và số lượng
+        type_detail = db.query(TypeDetail).filter(TypeDetail.id == item.type_detail_id).first()
+        price = type_detail.price * item.quantity if type_detail.price else 0
+        total_amount += price
+        
+        # Cập nhật trạng thái
+        item.is_active = False
+        item.modified_at = datetime.utcnow()
+    
+    # Tính điểm thưởng (ví dụ: 1% tổng giá trị đơn hàng)
+    reward_points = total_amount * REWARD
+    
+    # Cộng điểm thưởng cho người dùng
+    current_user.diem_thuong += reward_points
+    
+    # Lưu các thay đổi vào database
+    db.commit()
+    
+    return OrderResponse(
+        message="Đặt hàng thành công",
+        items_count=items_count,
+        total_amount=total_amount,
+        reward_points_earned=reward_points,
+        total_reward_points=current_user.diem_thuong
     )
