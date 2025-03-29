@@ -4,6 +4,8 @@ import uuid
 import random
 from datetime import datetime, timezone, timedelta, date
 import traceback
+import re
+
 import secrets
 
 # Thêm thư mục gốc vào sys.path để import module app
@@ -143,176 +145,141 @@ def seed_paint_type():
     finally:
         db.close()
 
+    
 def seed_image():
-    db = SessionLocal()
-    img_path = r"E:\FABER APP\faber_imgs"
-    try:
-        # Thêm dữ liệu mẫu cho image_resources
-        image_count = db.query(ImageResource).count()
-        if image_count == 0:
-            sample_images = []
-            for img_name in os.listdir(img_path):
-                image_path = os.path.join(img_path, img_name)
-                img_resource = ImageResource(
-                    image_path=image_path
-                )
-                sample_images.append(img_resource)
-            
-            db.add_all(sample_images)
-            db.commit()
-            print("Đã thêm dữ liệu mẫu vào bảng image_resources")
-    finally:
-        db.close()
-
-
-def seed_image1():
+    """
+    Seed images from faber_imgs folder into the database.
+    
+    Folder structure:
+    faber_imgs/
+        CODE1/
+            5L.png
+            18L.jpg
+        CODE2/
+            1L.jpg
+            5L.png
+            ...
+    """
     db = SessionLocal()
     # Xác định đường dẫn tuyệt đối của thư mục gốc project
-    # Giả sử file hiện tại nằm trong thư mục app hoặc một thư mục con của app
-    current_file_path = os.path.abspath(__file__)  # Đường dẫn của file hiện tại
-    
-    # Lấy đường dẫn thư mục cha của app (project_path)
+    current_file_path = os.path.abspath(__file__)
     project_path = os.path.dirname(os.path.dirname(current_file_path))
-    if os.path.basename(os.path.dirname(current_file_path)) != "app":
-        # Nếu file hiện tại không nằm trực tiếp trong thư mục app
-        # mà trong một thư mục con của app, điều chỉnh project_path
-        project_path = os.path.dirname(project_path)
-    
-    # Đường dẫn đến thư mục chứa ảnh, ngang hàng với thư mục app
+    image_paths = os.path.dirname(os.path.dirname(project_path))
     img_folder = "faber_imgs"
-    img_path = os.path.join(project_path, img_folder)
+    img_path = os.path.join(image_paths, img_folder)
     
-    print(f"Đường dẫn thư mục ảnh: {img_path}")
     
     try:
-        # Kiểm tra xem thư mục ảnh có tồn tại không
+        # Get all type details
+        type_details = db.query(TypeDetail).all()
+        print(f"Found {len(type_details)} TypeDetail records")
+        
+        # Track statistics
+        total_images_added = 0
+        codes_not_found = []
+        
+        # Iterate through each code folder in the faber_imgs directory
         if not os.path.exists(img_path):
-            print(f"Thư mục ảnh {img_path} không tồn tại!")
+            print(f"Error: {img_path} directory not found!")
             return
-        
-        # Thêm dữ liệu mẫu cho image_resources
-        image_count = db.query(ImageResource).count()
-        if image_count == 0:
-            sample_images = []
-            for img_name in os.listdir(img_path):
-                # Chỉ xử lý các file ảnh phổ biến
-                if img_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp')):
-                    # Lưu đường dẫn tuyệt đối đầy đủ
-                    image_path = os.path.abspath(os.path.join(img_path, img_name))
-                    print(f"Thêm ảnh: {image_path}")
-                    
-                    img_resource = ImageResource(
-                        image_path=image_path
-                    )
-                    sample_images.append(img_resource)
             
-            if sample_images:
-                db.add_all(sample_images)
-                db.commit()
-                print(f"Đã thêm {len(sample_images)} ảnh vào bảng image_resources")
-            else:
-                print("Không tìm thấy file ảnh nào trong thư mục")
-        else:
-            print(f"Đã có {image_count} bản ghi trong bảng image_resources, bỏ qua seed")
-    except Exception as e:
-        print(f"Lỗi khi seed dữ liệu ảnh: {e}")
-        db.rollback()
-    finally:
-        db.close()
-
-def seed_product_images():
-    db = SessionLocal()
-    try:
-        # Lấy tất cả sản phẩm từ database
-        products = db.query(TypeDetail).all()
+        code_folders = os.listdir(img_path)
+        print(f"Found {len(code_folders)} code folders in {img_path}")
         
-        if not products:
-            print("Không có sản phẩm trong database.")
-            return
-        
-        # Danh sách đường dẫn ảnh mẫu cho các loại sản phẩm
-        sample_image_paths = {
-            "Sơn Nước": [
-                "/uploads/images/products/son_nuoc_1.jpg",
-                "/uploads/images/products/son_nuoc_2.jpg",
-                "/uploads/images/products/son_nuoc_3.jpg",
-                "/uploads/images/products/son_nuoc_4.jpg"
-            ],
-            "Sơn Dầu": [
-                "/uploads/images/products/son_dau_1.jpg",
-                "/uploads/images/products/son_dau_2.jpg",
-                "/uploads/images/products/son_dau_3.jpg"
-            ],
-            "Sơn Epoxy": [
-                "/uploads/images/products/son_epoxy_1.jpg",
-                "/uploads/images/products/son_epoxy_2.jpg",
-                "/uploads/images/products/son_epoxy_3.jpg",
-                "/uploads/images/products/son_epoxy_4.jpg",
-                "/uploads/images/products/son_epoxy_5.jpg"
-            ],
-            "Sơn Chống Rỉ": [
-                "/uploads/images/products/son_chong_ri_1.jpg",
-                "/uploads/images/products/son_chong_ri_2.jpg",
-                "/uploads/images/products/son_chong_ri_3.jpg"
-            ],
-            "default": [
-                "/uploads/images/products/paint_1.jpg",
-                "/uploads/images/products/paint_2.jpg",
-                "/uploads/images/products/paint_3.jpg"
-            ]
-        }
-        
-        # Xóa ảnh cũ (tùy chọn)
-        delete_existing = input("Bạn có muốn xóa tất cả ảnh cũ không? (y/n): ")
-        if delete_existing.lower() == 'y':
-            db.query(ImageResource).delete()
-            print("Đã xóa tất cả ảnh cũ.")
-        
-        # Thêm ảnh cho mỗi sản phẩm
-        images_added = 0
-        
-        for product in products:
-            # Xác định loại sơn của sản phẩm
-            paint_type_name = db.query(PaintType.paint_type).join(TypeDetail).filter(TypeDetail.id == product.id).scalar()
-            # paint_type_name = product.paint_type
-            # Chọn đường dẫn ảnh phù hợp với loại sơn
-            image_paths = []
-            for key in sample_image_paths:
-                if key in paint_type_name:
-                    image_paths = sample_image_paths[key]
-                    break
-            
-            # Nếu không tìm thấy loại phù hợp, dùng mặc định
-            if not image_paths:
-                image_paths = sample_image_paths["default"]
-            
-            # Số lượng ảnh ngẫu nhiên cho mỗi sản phẩm (2-4)
-            num_images = random.randint(2, min(4, len(image_paths)))
-            selected_paths = random.sample(image_paths, num_images)
-            
-            # Thêm ảnh cho sản phẩm
-            for path in selected_paths:
-                # Thêm mã sản phẩm vào đường dẫn để làm cho nó độc đáo hơn
-                unique_path = path.replace(".jpg", f"_{product.code}_{random.randint(100, 999)}.jpg")
+        for code_folder in code_folders:
+            folder_path = os.path.join(img_path, code_folder)
+            if not os.path.isdir(folder_path):
+                continue
                 
-                image = ImageResource(
-                    image_path=unique_path,
-                    type_detail_id=product.id
+            # Find all TypeDetails with this code
+            matching_details = db.query(TypeDetail).filter(TypeDetail.code == code_folder).all()
+            
+            if not matching_details:
+                codes_not_found.append(code_folder)
+                print(f"Warning: No TypeDetail found with code {code_folder}")
+                continue
+                
+            # Get all images in this folder
+            image_files = [f for f in os.listdir(folder_path) 
+                         if os.path.isfile(os.path.join(folder_path, f)) 
+                         and f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            
+            for image_file in image_files:
+                # Try to extract volume from filename
+                # Assuming filenames like "5L.png", "18L.jpg", etc.
+                try:
+                    volume_str = image_file.split('.')[0].replace('L', '')
+                    volume = float(volume_str)
+                except (ValueError, IndexError):
+                    print(f"Warning: Could not extract volume from {image_file}, skipping")
+                    continue
+                
+                # Find matching TypeDetail with both code and volume
+                matching_detail = None
+                for detail in matching_details:
+                    if detail.volume == volume:
+                        matching_detail = detail
+                        break
+                
+                if not matching_detail:
+                    print(f"Warning: No TypeDetail found with code={code_folder} and volume={volume}")
+                    continue
+                
+                # Create relative image path
+                image_path = os.path.join(code_folder, image_file)
+                image_path = os.path.join(img_path,image_path )
+                # Check if image already exists for this TypeDetail
+                existing_image = db.query(ImageResource).filter(
+                    ImageResource.type_detail_id == matching_detail.id,
+                    ImageResource.image_path == image_path
+                ).first()
+                
+                if existing_image:
+                    print(f"Image already exists for TypeDetail id={matching_detail.id}, path={image_path}")
+                    continue
+                
+                # Create new ImageResource
+                new_image = ImageResource(
+                    image_path=image_path,
+                    type_detail_id=matching_detail.id
                 )
-                db.add(image)
-                images_added += 1
+                
+                db.add(new_image)
+                total_images_added += 1
+                print(f"Added image {image_path} to TypeDetail id={matching_detail.id} (code={code_folder}, volume={volume})")
         
+        # Commit all changes
         db.commit()
-        print(f"Đã thêm {images_added} ảnh cho {len(products)} sản phẩm.")
+        
+        # Print summary
+        print(f"\nSummary:")
+        print(f"Total images added: {total_images_added}")
+        if codes_not_found:
+            print(f"Codes not found in database: {', '.join(codes_not_found)}")
         
     except Exception as e:
         db.rollback()
-        print(f"Lỗi khi thêm ảnh sản phẩm: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"Error: {str(e)}")
+        raise
     finally:
         db.close()
 
+def clear_existing_images():
+    db = SessionLocal()
+    """Clear all existing ImageResource records from the database."""
+    try:
+        # Count existing images
+        image_count = db.query(ImageResource).count()
+        print(f"Deleting {image_count} existing ImageResource records...")
+        
+        # Delete all image resources
+        db.query(ImageResource).delete()
+        db.commit()
+        print(f"Successfully deleted all existing ImageResource records.")
+    except Exception as e:
+        db.rollback()
+        print(f"Error clearing existing images: {str(e)}")
+        raise
 
 def seed_type_detail():
     db = SessionLocal()
@@ -325,127 +292,390 @@ def seed_type_detail():
             
             if paint_types:
                 # Tạo dữ liệu mẫu cho sơn nước (nếu có)
-                son_nuoc = next((pt for pt in paint_types if pt.paint_type == "Sơn Nước"), None)
-                if son_nuoc:
-                    son_nuoc_details = [
+                son_min = next((pt for pt in paint_types if pt.paint_type == "Sơn mịn nội ngoại thất"), None)
+                if son_min:
+                    son_min_details = [
                         TypeDetail(
-                            paint_type_id=son_nuoc.id,
-                            product="Dulux Easyclean Plus",
-                            code="DLX-ECP-01",
+                            paint_type_id=son_min.id,
+                            product="CLASSIC",
+                            code="FB32",
                             package="Thùng",
-                            volume=5.0,
-                            price=1250000,
-                            m2_cover=60.0,
-                            promotion="Giảm 10% đến cuối tháng",
+                            volume=18.0,
+                            price=920000,
+                            m2_cover=80,
+                            promotion="",
+                            features= "Sơn mịn nội thất",
                             base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
                         ),
                         TypeDetail(
-                            paint_type_id=son_nuoc.id,
-                            product="Jotun Majestic True Beauty Sheen",
-                            code="JOTUN-MTB-02",
+                            paint_type_id=son_min.id,
+                            product="SILVER",
+                            code="FB505",
                             package="Thùng",
-                            volume=5.0,
-                            price=1420000,
-                            m2_cover=65.0,
-                            promotion=None,
-                            base64=None
+                            volume=18.0,
+                            price=2360000,
+                            m2_cover=90,
+                            promotion="",
+                            features= "Sơn mịn ngoại thất\nĐộ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
                         ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SILVER",
+                            code="FB505",
+                            package="Lon",
+                            volume=5.0,
+                            price=750000,
+                            m2_cover=27,
+                            promotion="",
+                            features= "Sơn mịn ngoại thất\nĐộ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SUPER WHITE",
+                            code="FB33",
+                            package="Thùng",
+                            volume=18.0,
+                            price=1880000,
+                            m2_cover=90,
+                            promotion="",
+                            features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SUPER WHITE",
+                            code="FB33",
+                            package="Lon",
+                            volume=5.0,
+                            price=590000,
+                            m2_cover=22,
+                            promotion="",
+                            features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="EASY CLEAN",
+                            code="FB350",
+                            package="Thùng",
+                            volume=18.0,
+                            price=2280000,
+                            m2_cover=100,
+                            promotion="",
+                            features= "Sơn siêu mịn lau chùi nội thất cao cấp\nChống thấm tốt, chống nấm mốc, rửa sạch vết bẩn, độ bền màu cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="EASY CLEAN",
+                            code="FB350",
+                            package="Lon",
+                            volume=5.0,
+                            price=670000,
+                            m2_cover=25,
+                            promotion="",
+                            features= "Sơn siêu mịn lau chùi nội thất cao cấp\nChống thấm tốt, chống nấm mốc, rửa sạch vết bẩn, độ bền màu cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        )
                     ]
-                    db.add_all(son_nuoc_details)
+                    db.add_all(son_min_details)
                 
                 # Tạo dữ liệu mẫu cho sơn dầu (nếu có)
-                son_dau = next((pt for pt in paint_types if pt.paint_type == "Sơn Dầu"), None)
-                if son_dau:
-                    son_dau_details = [
+                son_bong = next((pt for pt in paint_types if pt.paint_type == "Sơn bóng nội ngoại thất"), None)
+                if son_bong:
+                    son_bong_details = [
                         TypeDetail(
-                            paint_type_id=son_dau.id,
-                            product="Nippon Oil-based Enamel",
-                            code="NIP-OBE-01",
-                            package="Lon",
-                            volume=1.0,
-                            price=180000,
-                            m2_cover=12.0,
-                            promotion=None,
-                            base64=None
+                            paint_type_id=son_bong.id,
+                            product="SATIN",
+                            code="FB365",
+                            package="Thùng",
+                            volume=18.0,
+                            price=3270000,
+                            m2_cover=115,
+                            promotion="",
+                            features= "Sơn bóng nội thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
                         ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="SATIN",
+                            code="FB365",
+                            package="Lon",
+                            volume=5.0,
+                            price=1070000,
+                            m2_cover=32,
+                            promotion="",
+                            features= "Sơn bóng nội thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="NANO SHIELD",
+                            code="FB536",
+                            package="Lon",
+                            volume=5.0,
+                            price=750000,
+                            m2_cover=35,
+                            promotion="",
+                            features= "Sơn bóng ngoại thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="NANO SHIELD",
+                            code="FB536",
+                            package="Thùng",
+                            volume=18.0,
+                            price=4080000,
+                            m2_cover=130,
+                            promotion="",
+                            features= "Sơn bóng ngoại thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        )
                     ]
-                    db.add_all(son_dau_details)
+                    db.add_all(son_bong_details)
                 
                 # Tạo dữ liệu mẫu cho sơn epoxy (nếu có)
-                son_epoxy = next((pt for pt in paint_types if pt.paint_type == "Sơn Epoxy"), None)
-                if son_epoxy:
-                    son_epoxy_details = [
+                son_chong_tham_mau = next((pt for pt in paint_types if pt.paint_type == "Sơn chống thấm màu"), None)
+                if son_chong_tham_mau:
+                    son_chong_tham_mau_details = [
                         TypeDetail(
-                            paint_type_id=son_epoxy.id,
-                            product="Jotun Jotafloor PU Topcoat",
-                            code="JOT-JFPU-01",
-                            package="Bộ",
-                            volume=5.0,
-                            price=2500000,
-                            m2_cover=50.0,
-                            promotion="Tặng kèm bộ dụng cụ thi công",
-                            base64=None
+                            paint_type_id=son_chong_tham_mau.id,
+                            product="COLOR POWER",
+                            code="FB845",
+                            package="Thùng",
+                            volume=18.0,
+                            price=3760000,
+                            m2_cover=85,
+                            promotion="",
+                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủtuyệt đối, chống nóng, độ bền cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
                         ),
                         TypeDetail(
-                            paint_type_id=son_epoxy.id,
-                            product="Cadin Epoxy Floor CD-500",
-                            code="CAD-EP-500",
-                            package="Bộ",
+                            paint_type_id=son_chong_tham_mau.id,
+                            product="COLOR POWER",
+                            code="FB845",
+                            package="Lon",
                             volume=5.0,
-                            price=1800000,
-                            m2_cover=45.0,
-                            promotion=None,
-                            base64=None
-                        ),
+                            price=3760000,
+                            m2_cover=15,
+                            promotion="",
+                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủtuyệt đối, chống nóng, độ bền cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        )
                     ]
-                    db.add_all(son_epoxy_details)
+                    db.add_all(son_chong_tham_mau_details)
+
+                # Tạo dữ liệu mẫu cho  Sơn lót chống kiềm (nếu có)
+                son_lot_chong_kiem = next((pt for pt in paint_types if pt.paint_type == "Sơn lót chống kiềm"), None)
+                if son_lot_chong_kiem:
+                    son_lot_chong_kiem_details = [
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="PRIMER ULTRA",
+                            code="M35",
+                            package="Thùng",
+                            volume=18.0,
+                            price=4550000,
+                            m2_cover=120,
+                            promotion="",
+                            features= "Sơn lót siêu kháng kiềm muối tường ẩm\nChống kiềm muối đặc biệt",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="PRIMER ULTRA",
+                            code="M35",
+                            package="Lon",
+                            volume=5.0,
+                            price=1350000,
+                            m2_cover=35,
+                            promotion="",
+                            features= "Sơn lót siêu kháng kiềm muối tường ẩm\nChống kiềm muối đặc biệt",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="SEALER MAX",
+                            code="M11",
+                            package="Thùng",
+                            volume=18.0,
+                            price=2370000,
+                            m2_cover=120,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm nội thất đặc biệt\nKháng kiềm, chống rêu mốc, tăng độ bám dính, chống loang ố",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="SEALER MAX",
+                            code="M11",
+                            package="Lon",
+                            volume=5.0,
+                            price=770000,
+                            m2_cover=35,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm nội thất đặc biệt\nKháng kiềm, chống rêu mốc, tăng độ bám dính, chống loang ố",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="PRIMER",
+                            code="FB23",
+                            package="Thùng",
+                            volume=18.0,
+                            price=2660000,
+                            m2_cover=120,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm ngoại thất\nKháng kiềm, nấm mốc, tăng độ bám dính",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="PLATINUM PRIMER",
+                            code="FB25",
+                            package="Thùng",
+                            volume=18.0,
+                            price=3410000,
+                            m2_cover=120,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm ngoại thất cao cấp\nChống muối, chống nấm mốc, chống phấn hóa, độ bền cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="PLATINUM PRIMER",
+                            code="FB25",
+                            package="Lon",
+                            volume=5.0,
+                            price=1060000,
+                            m2_cover=35,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm ngoại thất cao cấp\nChống muối, chống nấm mốc, chống phấn hóa, độ bền cao",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="SEALER",
+                            code="FB01",
+                            package="Thùng",
+                            volume=18.0,
+                            price=1790000,
+                            m2_cover=110,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm nội thất\nKháng kiềm, chống nấm mốc, tăng độ bám dính, độ phủ",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="SEALER PLUS",
+                            code="FB102",
+                            package="Thùng",
+                            volume=18.0,
+                            price=2250000,
+                            m2_cover=115,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm nội thất cao cấp\nThẩm thấu, bám dính, độ phủ cao, chống phấn hóa, chống loang ố màu",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_lot_chong_kiem.id,
+                            product="SEALER PLUS",
+                            code="FB102",
+                            package="Thùng",
+                            volume=5.0,
+                            price=690000,
+                            m2_cover=33,
+                            promotion="",
+                            features= "Sơn lót kháng kiềm nội thất cao cấp\nThẩm thấu, bám dính, độ phủ cao, chống phấn hóa, chống loang ố màu",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        )
+                    ]
+                    db.add_all(son_lot_chong_kiem_details)
+
+                # Tạo dữ liệu mẫu cho Sơn siêu bóng men sứ (nếu có)
+                metro_lux = next((pt for pt in paint_types if pt.paint_type == "Sơn siêu bóng men sứ"), None)
+                if metro_lux:
+                    metro_lux_details = [
+                        TypeDetail(
+                            paint_type_id=metro_lux.id,
+                            product="CRYSTAL",
+                            code="M12",
+                            package="Thùng",
+                            volume=15.0,
+                            price=4200000,
+                            m2_cover=120,
+                            promotion="",
+                            features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=metro_lux.id,
+                            product="CRYSTAL",
+                            code="M12",
+                            package="Lon",
+                            volume=5.0,
+                            price=1380000,
+                            m2_cover=30,
+                            promotion="",
+                            features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=metro_lux.id,
+                            product="CRYSTAL",
+                            code="M12",
+                            package="Lon",
+                            volume=1.0,
+                            price=375000,
+                            m2_cover=10,
+                            promotion="",
+                            features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=metro_lux.id,
+                            product="ANAMEL",
+                            code="M38",
+                            package="Thùng",
+                            volume=15.0,
+                            price=5850000,
+                            m2_cover=120,
+                            promotion="",
+                            features= "Sơn men sứ chống bám bụi cap cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=metro_lux.id,
+                            product="ANAMEL",
+                            code="M38",
+                            package="Lon",
+                            volume=5.0,
+                            price=2350000,
+                            m2_cover=30,
+                            promotion="",
+                            features= "Sơn men sứ chống bám bụi cap cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        ),
+                        TypeDetail(
+                            paint_type_id=metro_lux.id,
+                            product="ANAMEL",
+                            code="M38",
+                            package="Lon",
+                            volume=1.0,
+                            price=550000,
+                            m2_cover=10,
+                            promotion="",
+                            features= "Sơn men sứ chống bám bụi cap cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
+                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                        )
+                    ]
+                    db.add_all(metro_lux_details)
             
             db.commit()
             print("Đã thêm dữ liệu mẫu vào bảng type_details")
-    finally:
-        db.close()
-
-def seed_order_detail():
-    db = SessionLocal()
-    try:
-        # Code đã có cho User, Order, PaintType, ImageResource, TypeDetail
-        # ...
-        
-        # Thêm dữ liệu mẫu cho order_details
-        order_detail_count = db.query(OrderDetail).count()
-        if order_detail_count == 0:
-            # Lấy orders và type_details từ database
-            orders = db.query(Order).all()
-            type_details = db.query(TypeDetail).all()
-            
-            if orders and type_details:
-                sample_order_details = []
-                
-                # Tạo dữ liệu cho mỗi order
-                for order in orders:
-                    # Chọn ngẫu nhiên từ 1-3 sản phẩm cho mỗi đơn hàng
-                    num_products = random.randint(1, min(3, len(type_details)))
-                    selected_type_details = random.sample(type_details, num_products)
-                    
-                    for td in selected_type_details:
-                        # Nếu có giá sản phẩm, sử dụng nó để tính total_amount
-                        if td.price:
-                            quantity = random.randint(1, 5)
-                            total_amount = quantity * td.price
-                            
-                            sample_order_details.append(
-                                OrderDetail(
-                                    order_id=order.id,
-                                    type_detail_id=td.id,
-                                    quantity=quantity,
-                                    total_amount=total_amount
-                                )
-                            )
-                
-                if sample_order_details:
-                    db.add_all(sample_order_details)
-                    db.commit()
-                    print(f"Đã thêm {len(sample_order_details)} dữ liệu mẫu vào bảng order_details")
     finally:
         db.close()
 
@@ -549,86 +779,139 @@ def seed_token_store():
     finally:
         db.close()
 
-def seed_thumbnail_data():
+def clear_existing_thumbnails():
     db = SessionLocal()
+    """Clear all existing Thumbnail records from the database."""
     try:
-        # Lấy tất cả sản phẩm từ database
-        products = db.query(TypeDetail).all()
+        # Count existing thumbnails
+        thumbnail_count = db.query(Thumbnail).count()
+        print(f"Deleting {thumbnail_count} existing Thumbnail records...")
         
-        if not products:
-            print("Không có sản phẩm trong database.")
-            return
-        
-        # Tạo thư mục lưu trữ thumbnail nếu chưa tồn tại
-        thumbnails_dir = Path(root_dir) / "static" / "thumbnails"
-        thumbnails_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Các mẫu tên file ảnh giả lập
-        sample_image_names = [
-            "product_thumbnail_1.jpg",
-            "product_thumbnail_2.png",
-            "product_image_small.jpg",
-            "product_preview.png",
-            "thumbnail_preview.jpg",
-            "small_preview.png",
-            "color_sample.jpg",
-            "product_detail.png",
-            "paint_sample.jpg",
-            "color_palette.png"
-        ]
-        
-        # Thêm thumbnail cho mỗi sản phẩm
-        thumbnails_added = 0
-        
-        for product in products:
-            # Kiểm tra xem sản phẩm đã có thumbnail chưa
-            existing_thumbnail = db.query(Thumbnail).filter(Thumbnail.type_detail_id == product.id).first()
-            
-            if not existing_thumbnail:
-                # Chọn ngẫu nhiên một tên file
-                image_name = random.choice(sample_image_names)
-                
-                # Tạo đường dẫn giả lập
-                path_to_thumbnail = f"/static/thumbnails/{product.code}_{image_name}" if product.code else f"/static/thumbnails/product_{product.id}_{image_name}"
-                
-                # Tạo bản ghi trong database mà không cần tạo file thực
-                thumbnail = Thumbnail(
-                    type_detail_id=product.id,
-                    path_to_thumbnail=path_to_thumbnail
-                )
-                db.add(thumbnail)
-                thumbnails_added += 1
-                
-                # Thêm nhiều hơn một thumbnail cho một số sản phẩm ngẫu nhiên
-                if random.random() < 0.3:  # 30% xác suất thêm thumbnail thứ hai
-                    image_name2 = random.choice(sample_image_names)
-                    while image_name2 == image_name:  # Đảm bảo không trùng tên
-                        image_name2 = random.choice(sample_image_names)
-                        
-                    path_to_thumbnail2 = f"/static/thumbnails/{product.code}_alt_{image_name2}" if product.code else f"/static/thumbnails/product_{product.id}_alt_{image_name2}"
-                    
-                    thumbnail2 = Thumbnail(
-                        type_detail_id=product.id,
-                        path_to_thumbnail=path_to_thumbnail2
-                    )
-                    db.add(thumbnail2)
-                    thumbnails_added += 1
-        
+        # Delete all thumbnails
+        db.query(Thumbnail).delete()
         db.commit()
-        print(f"Đã thêm {thumbnails_added} thumbnail cho các sản phẩm.")
+        print(f"Successfully deleted all existing Thumbnail records.")
+    except Exception as e:
+        db.rollback()
+        print(f"Error clearing existing thumbnails: {str(e)}")
+        raise
+
+def seed_thumbnails():
+    """
+    Seed thumbnails from faber_thumbs folder into the database.
+    First clears all existing Thumbnail records, then adds new ones.
+    
+    Folder structure:
+    faber_thumbs/
+        CODE1/
+            5L.png
+            18L.jpg
+        CODE2/
+            1L.jpg
+            5L.png
+            ...
+    """
+    db = SessionLocal()
+    # Xác định đường dẫn tuyệt đối của thư mục gốc project
+    current_file_path = os.path.abspath(__file__)
+    project_path = os.path.dirname(os.path.dirname(current_file_path))
+    image_paths = os.path.dirname(os.path.dirname(project_path))
+    thumbs_folder = "faber_thumbs"
+    thumb_path = os.path.join(image_paths, thumbs_folder)
+    
+    try:
         
-        # Hiển thị một số thống kê
-        products_with_thumbnails = db.query(TypeDetail).join(Thumbnail).distinct().count()
-        total_thumbnails = db.query(Thumbnail).count()
+        # Get all type details
+        type_details = db.query(TypeDetail).all()
+        print(f"Found {len(type_details)} TypeDetail records")
         
-        print(f"Số sản phẩm có thumbnail: {products_with_thumbnails}/{len(products)}")
-        print(f"Tổng số thumbnail: {total_thumbnails}")
+        # Track statistics
+        total_thumbnails_added = 0
+        codes_not_found = []
+        
+        # Iterate through each code folder in the thumbnail directory
+        if not os.path.exists(thumb_path):
+            print(f"Error: {thumb_path} directory not found!")
+            return
+            
+        code_folders = os.listdir(thumb_path)
+        print(f"Found {len(code_folders)} code folders in {thumb_path}")
+        
+        for code_folder in code_folders:
+            folder_path = os.path.join(thumb_path   , code_folder)
+            if not os.path.isdir(folder_path):
+                continue
+                
+            # Find all TypeDetails with this code
+            matching_details = db.query(TypeDetail).filter(TypeDetail.code == code_folder).all()
+            
+            if not matching_details:
+                codes_not_found.append(code_folder)
+                print(f"Warning: No TypeDetail found with code {code_folder}")
+                continue
+                
+            # Get all thumbnail images in this folder
+            thumbnail_files = [f for f in os.listdir(folder_path) 
+                             if os.path.isfile(os.path.join(folder_path, f)) 
+                             and f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            
+            for thumbnail_file in thumbnail_files:
+                # Try to extract volume from filename
+                # Assuming filenames like "5L.png", "18L.jpg", etc.
+                try:
+                    volume_str = thumbnail_file.split('.')[0].replace('L', '')
+                    volume = float(volume_str)
+                except (ValueError, IndexError):
+                    print(f"Warning: Could not extract volume from {thumbnail_file}, skipping")
+                    continue
+                
+                # Find matching TypeDetail with both code and volume
+                matching_detail = None
+                for detail in matching_details:
+                    if detail.volume == volume:
+                        matching_detail = detail
+                        break
+                
+                if not matching_detail:
+                    print(f"Warning: No TypeDetail found with code={code_folder} and volume={volume}")
+                    continue
+                
+                # Create relative thumbnail path
+                thumbnail_path = os.path.join(code_folder, thumbnail_file)
+                
+                # Check if thumbnail already exists for this TypeDetail
+                existing_thumbnail = db.query(Thumbnail).filter(
+                    Thumbnail.type_detail_id == matching_detail.id,
+                    Thumbnail.path_to_thumbnail == thumbnail_path
+                ).first()
+                
+                if existing_thumbnail:
+                    print(f"Thumbnail already exists for TypeDetail id={matching_detail.id}, path={thumbnail_path}")
+                    continue
+                
+                # Create new Thumbnail
+                new_thumbnail = Thumbnail(
+                    path_to_thumbnail=thumbnail_path,
+                    type_detail_id=matching_detail.id
+                )
+                
+                db.add(new_thumbnail)
+                total_thumbnails_added += 1
+                print(f"Added thumbnail {thumbnail_path} to TypeDetail id={matching_detail.id} (code={code_folder}, volume={volume})")
+        
+        # Commit all changes
+        db.commit()
+        
+        # Print summary
+        print(f"\nSummary:")
+        print(f"Total thumbnails added: {total_thumbnails_added}")
+        if codes_not_found:
+            print(f"Codes not found in database: {', '.join(codes_not_found)}")
         
     except Exception as e:
         db.rollback()
-        print(f"Lỗi khi thêm thumbnail: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"Error: {str(e)}")
+        raise
     finally:
         db.close()
 
@@ -638,12 +921,14 @@ if __name__ == "__main__":
         init_db()
         # seed_data()
         # seed_paint_type()
-        seed_image()
+        # clear_existing_images()
+        # seed_image()
+        clear_existing_thumbnails()
+        seed_thumbnails()
         # seed_product_images()
         # seed_type_detail()
         # seed_order_detail()
         # seed_token_store()
-        # seed_thumbnail_data()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")

@@ -10,7 +10,7 @@ class Thumbnail(Base):
     path_to_thumbnail = Column(String, nullable=False)
     
     # Relationship với TypeDetail sử dụng string reference để tránh circular import
-    type_detail = relationship("app.models.type_detail.TypeDetail", back_populates="thumbnails")
+    type_detail = relationship("TypeDetail", back_populates="thumbnails")
     
     def __repr__(self):
         return f"<Thumbnail(id={self.id}, type_detail_id={self.type_detail_id}, path='{self.path_to_thumbnail}')>"

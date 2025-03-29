@@ -23,15 +23,13 @@ class TypeDetail(Base):
     paint_type = relationship("PaintType", back_populates="type_details")
     
     # Relationship với OrderDetail
-    # order_details = relationship("OrderDetail", back_populates="type_detail")
     cart_items = relationship("CartItem", back_populates="type_detail")
 
     # Relationship với ImageResource
     images = relationship("ImageResource", back_populates="type_detail", cascade="all, delete-orphan")
     
     # Relationship với Thumbnail 
-    # thumbnails = relationship("Thumbnail", back_populates="type_detail", cascade="all, delete-orphan")
-    thumbnails = relationship("app.models.thumbnail.Thumbnail", back_populates="type_detail", cascade="all, delete-orphan")
+    thumbnails = relationship("Thumbnail", back_populates="type_detail", cascade="all, delete-orphan")
 
 
     def __repr__(self):

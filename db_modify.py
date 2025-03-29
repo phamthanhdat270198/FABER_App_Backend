@@ -528,59 +528,118 @@ def clear_paint_types(db_path="app.db"):
             pass
         return False
 
-def seed_image(db: Session):
-    # Xác định đường dẫn tuyệt đối của thư mục gốc project
-    # Giả sử file hiện tại nằm trong thư mục app hoặc một thư mục con của app
-    current_file_path = os.path.abspath(__file__)  # Đường dẫn của file hiện tại
+def clear_type_details_with_sqlite(db_path="app.db"):
+    """
+    Xóa tất cả dữ liệu trong bảng type_details sử dụng SQLite trực tiếp
     
-    # Lấy đường dẫn thư mục cha của app (project_path)
-    project_path = os.path.dirname(os.path.dirname(current_file_path))
-    if os.path.basename(os.path.dirname(current_file_path)) != "app":
-        # Nếu file hiện tại không nằm trực tiếp trong thư mục app
-        # mà trong một thư mục con của app, điều chỉnh project_path
-        project_path = os.path.dirname(project_path)
-    
-    # Đường dẫn đến thư mục chứa ảnh, ngang hàng với thư mục app
-    img_folder = "faber_imgs"
-    img_path = os.path.join(project_path, img_folder)
-    
-    print(f"Đường dẫn thư mục ảnh: {img_path}")
-    
-    try:
-        # Kiểm tra xem thư mục ảnh có tồn tại không
-        if not os.path.exists(img_path):
-            print(f"Thư mục ảnh {img_path} không tồn tại!")
-            return
+    Args:
+        db_path (str): Đường dẫn đến file database SQLite
+    """
+    # Kiểm tra file database có tồn tại không
+    if not os.path.exists(db_path):
+        print(f"Lỗi: Database không tồn tại tại đường dẫn: {db_path}")
+        return False
         
-        # Thêm dữ liệu mẫu cho image_resources
-        image_count = db.query(ImageResource).count()
-        if image_count == 0:
-            sample_images = []
-            for img_name in os.listdir(img_path):
-                # Chỉ xử lý các file ảnh phổ biến
-                if img_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp')):
-                    # Lưu đường dẫn tuyệt đối đầy đủ
-                    image_path = os.path.abspath(os.path.join(img_path, img_name))
-                    print(f"Thêm ảnh: {image_path}")
-                    
-                    img_resource = ImageResource(
-                        image_path=image_path
-                    )
-                    sample_images.append(img_resource)
+    try:
+        # Kết nối tới database
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Kiểm tra xem bảng type_details có tồn tại không
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='type_details';")
+        if not cursor.fetchone():
+            print("Bảng 'type_details' không tồn tại trong database.")
+            conn.close()
+            return False
             
-            if sample_images:
-                db.add_all(sample_images)
-                db.commit()
-                print(f"Đã thêm {len(sample_images)} ảnh vào bảng image_resources")
-            else:
-                print("Không tìm thấy file ảnh nào trong thư mục")
-        else:
-            print(f"Đã có {image_count} bản ghi trong bảng image_resources, bỏ qua seed")
+        # Kiểm tra số lượng bản ghi hiện có
+        cursor.execute("SELECT COUNT(*) FROM type_details;")
+        current_count = cursor.fetchone()[0]
+        print(f"Hiện có {current_count} bản ghi trong bảng type_details")
+        
+        if current_count == 0:
+            print("Bảng type_details đã trống, không cần xóa dữ liệu.")
+            conn.close()
+            return True
+        
+        # Xác nhận từ người dùng
+        confirm = input("\nBạn có chắc chắn muốn xóa TẤT CẢ dữ liệu từ bảng type_details? (y/n): ")
+        if confirm.lower() != 'y':
+            print("Đã hủy thao tác xóa dữ liệu.")
+            conn.close()
+            return False
+            
+        # Tắt tạm thời foreign key constraints
+        cursor.execute("PRAGMA foreign_keys = OFF;")
+        
+        # Bắt đầu transaction
+        conn.execute("BEGIN TRANSACTION;")
+        
+        # Kiểm tra xem có bảng images liên quan không
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='image_resources';")
+        has_images = cursor.fetchone()
+        
+        # Kiểm tra xem có bảng thumbnails liên quan không
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='thumbnails';")
+        has_thumbnails = cursor.fetchone()
+        
+        # Kiểm tra xem có bảng cart_items liên quan không
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cart_items';")
+        has_cart_items = cursor.fetchone()
+        
+        # Xóa dữ liệu từ bảng liên quan trước nếu có
+        if has_images:
+            cursor.execute("DELETE FROM image_resources WHERE type_detail_id IN (SELECT id FROM type_details);")
+            print("Đã xóa dữ liệu liên quan từ bảng image_resources")
+            
+        if has_thumbnails:
+            cursor.execute("DELETE FROM thumbnails WHERE type_detail_id IN (SELECT id FROM type_details);")
+            print("Đã xóa dữ liệu liên quan từ bảng thumbnails")
+            
+        if has_cart_items:
+            cursor.execute("DELETE FROM cart_items WHERE type_detail_id IN (SELECT id FROM type_details);")
+            print("Đã xóa dữ liệu liên quan từ bảng cart_items")
+        
+        # Xóa dữ liệu từ bảng type_details
+        cursor.execute("DELETE FROM type_details;")
+        
+        # Reset auto-increment counter cho bảng type_details
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='type_details';")
+        
+        # Hiển thị số bản ghi đã xóa
+        print(f"Đã xóa {current_count} bản ghi từ bảng type_details")
+        
+        # Commit thay đổi
+        conn.commit()
+        
+        # Bật lại foreign key constraints
+        cursor.execute("PRAGMA foreign_keys = ON;")
+        
+        # Kiểm tra lại số lượng bản ghi sau khi xóa
+        cursor.execute("SELECT COUNT(*) FROM type_details;")
+        after_count = cursor.fetchone()[0]
+        
+        print(f"\nKiểm tra sau khi xóa: {after_count} bản ghi trong bảng type_details")
+        print("Đã xóa thành công tất cả dữ liệu. Cấu trúc bảng type_details vẫn được giữ nguyên.")
+        
+        # Đóng kết nối
+        conn.close()
+        return True
+        
+    except sqlite3.Error as e:
+        print(f"Lỗi SQLite: {e}")
+        try:
+            conn.rollback()
+        except:
+            pass
+        return False
     except Exception as e:
-        print(f"Lỗi khi seed dữ liệu ảnh: {e}")
-        db.rollback()
-    finally:
-        db.close()
+        print(f"Lỗi: {e}")
+        try:
+            conn.rollback()
+        except:
+            pass
+        return False
 
 if __name__ == "__main__":
     # Lấy đường dẫn đến database từ tham số dòng lệnh hoặc sử dụng giá trị mặc định
@@ -597,5 +656,6 @@ if __name__ == "__main__":
     # show_all_tables(db_path)
     # drop_order_tables(db_path)
     # clear_all_tables(db_path)
-    clear_paint_types(db_path)
-    seed_paint_types1(db_path)
+    # clear_paint_types(db_path)
+    # seed_paint_types1(db_path)
+    clear_type_details_with_sqlite(db_path)
