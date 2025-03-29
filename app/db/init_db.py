@@ -2,7 +2,7 @@ import os
 import sys
 import uuid
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, date
 import traceback
 import secrets
 
@@ -27,7 +27,17 @@ from app.models.cart_items import CartItem
 import shutil
 from pathlib import Path
 from alembic import op
+from app.core.security import get_password_hash
 
+def get_date_time():
+    utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
+
+    # Chuyển sang giờ Việt Nam (UTC+7)
+    vn_time = utc_now.astimezone(timezone(timedelta(hours=7)))
+
+    # Định dạng chuỗi
+    # formatted_time = vn_time.strftime("%Y-%m-%d %H:%M:%S")
+    return vn_time
 
 def init_db():
     # Tạo tất cả các bảng trong database
@@ -44,56 +54,33 @@ def seed_data():
             # Thêm một số dữ liệu mẫu
             sample_users = [
                 User(
-                    ho_ten="Nguyễn Văn A", 
-                    dia_chi="123 Đường Lê Lợi, Quận 1, TP.HCM", 
-                    so_dien_thoai="0901234567", 
-                    diem_thuong=100.0
+                    ho_ten="Phạm Thành Đạt", 
+                    dia_chi="Hà Nội", 
+                    so_dien_thoai="0967496062", 
+                    diem_thuong=1000000,
+                    ngay_tao=get_date_time(),
+                    hashed_password= get_password_hash("admin123"),
+                    status = "ACCEPTED",
+                    date_of_birth = date(1998, 1, 27),
+                    gender = "Nam", 
+                    admin = True
                 ),
                 User(
-                    ho_ten="Trần Thị B", 
-                    dia_chi="456 Đường Nguyễn Huệ, Quận 1, TP.HCM", 
-                    so_dien_thoai="0912345678", 
-                    diem_thuong=150.5
-                ),
+                    ho_ten="Lưu Trọng Hiếu", 
+                    dia_chi="Nghệ An", 
+                    so_dien_thoai="0372532690", 
+                    diem_thuong=1000000,
+                    ngay_tao=get_date_time(),
+                    hashed_password= get_password_hash("admin123"),
+                    status = "ACCEPTED",
+                    gender = "Nam", 
+                    admin = True
+                )
             ]
             db.add_all(sample_users)
             db.commit()
             print("Đã thêm dữ liệu mẫu vào bảng users")
             
-        # Kiểm tra xem bảng orders đã có dữ liệu chưa
-        order_count = db.query(Order).count()
-        if order_count == 0:
-            # Lấy users từ database để tạo orders
-            users = db.query(User).all()
-            if users:
-                sample_orders = [
-                    Order(
-                        user_id=users[0].id,
-                        date_time=datetime.utcnow() - timedelta(days=2),
-                        status=OrderStatus.ACCEPT,
-                        is_deleted=False
-                    ),
-                    Order(
-                        user_id=users[0].id,
-                        date_time=datetime.utcnow() - timedelta(days=1),
-                        status=OrderStatus.PENDING,
-                        is_deleted=False
-                    ),
-                ]
-                
-                if len(users) > 1:
-                    sample_orders.append(
-                        Order(
-                            user_id=users[1].id,
-                            date_time=datetime.utcnow() - timedelta(hours=12),
-                            status=OrderStatus.PENDING,
-                            is_deleted=False
-                        )
-                    )
-                
-                db.add_all(sample_orders)
-                db.commit()
-                print("Đã thêm dữ liệu mẫu vào bảng orders")
     except Exception as e:
         print(f"Lỗi khi thêm dữ liệu mẫu: {e}")
         traceback.print_exc()
@@ -174,6 +161,62 @@ def seed_image():
             db.add_all(sample_images)
             db.commit()
             print("Đã thêm dữ liệu mẫu vào bảng image_resources")
+    finally:
+        db.close()
+
+
+def seed_image1():
+    db = SessionLocal()
+    # Xác định đường dẫn tuyệt đối của thư mục gốc project
+    # Giả sử file hiện tại nằm trong thư mục app hoặc một thư mục con của app
+    current_file_path = os.path.abspath(__file__)  # Đường dẫn của file hiện tại
+    
+    # Lấy đường dẫn thư mục cha của app (project_path)
+    project_path = os.path.dirname(os.path.dirname(current_file_path))
+    if os.path.basename(os.path.dirname(current_file_path)) != "app":
+        # Nếu file hiện tại không nằm trực tiếp trong thư mục app
+        # mà trong một thư mục con của app, điều chỉnh project_path
+        project_path = os.path.dirname(project_path)
+    
+    # Đường dẫn đến thư mục chứa ảnh, ngang hàng với thư mục app
+    img_folder = "faber_imgs"
+    img_path = os.path.join(project_path, img_folder)
+    
+    print(f"Đường dẫn thư mục ảnh: {img_path}")
+    
+    try:
+        # Kiểm tra xem thư mục ảnh có tồn tại không
+        if not os.path.exists(img_path):
+            print(f"Thư mục ảnh {img_path} không tồn tại!")
+            return
+        
+        # Thêm dữ liệu mẫu cho image_resources
+        image_count = db.query(ImageResource).count()
+        if image_count == 0:
+            sample_images = []
+            for img_name in os.listdir(img_path):
+                # Chỉ xử lý các file ảnh phổ biến
+                if img_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp')):
+                    # Lưu đường dẫn tuyệt đối đầy đủ
+                    image_path = os.path.abspath(os.path.join(img_path, img_name))
+                    print(f"Thêm ảnh: {image_path}")
+                    
+                    img_resource = ImageResource(
+                        image_path=image_path
+                    )
+                    sample_images.append(img_resource)
+            
+            if sample_images:
+                db.add_all(sample_images)
+                db.commit()
+                print(f"Đã thêm {len(sample_images)} ảnh vào bảng image_resources")
+            else:
+                print("Không tìm thấy file ảnh nào trong thư mục")
+        else:
+            print(f"Đã có {image_count} bản ghi trong bảng image_resources, bỏ qua seed")
+    except Exception as e:
+        print(f"Lỗi khi seed dữ liệu ảnh: {e}")
+        db.rollback()
     finally:
         db.close()
 
@@ -595,7 +638,7 @@ if __name__ == "__main__":
         init_db()
         # seed_data()
         # seed_paint_type()
-        # seed_image()
+        seed_image()
         # seed_product_images()
         # seed_type_detail()
         # seed_order_detail()

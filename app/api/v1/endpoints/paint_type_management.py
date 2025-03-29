@@ -25,7 +25,7 @@ def get_all_paint_types(
     return paint_types
 
 @router.post("", response_model=PaintTypeResponse, status_code=status.HTTP_201_CREATED)
-@router.post("", response_model=PaintTypeResponse, status_code=status.HTTP_201_CREATED)
+# @router.post("", response_model=PaintTypeResponse, status_code=status.HTTP_201_CREATED)
 def create_paint_type(
     *,
     db: Session = Depends(get_db),

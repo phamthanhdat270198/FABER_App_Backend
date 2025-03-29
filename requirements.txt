@@ -12,3 +12,4 @@ alembic
 sniffio
 email-validator
 pydantic-settings
+pytz

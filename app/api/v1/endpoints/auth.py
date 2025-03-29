@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any, List, Optional
+from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -18,7 +19,12 @@ from app.crud import crud_token_store
 
 router = APIRouter()
 
+def get_date_time():
+    utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
+    # Chuyển sang giờ Việt Nam (UTC+7)
+    vn_time = utc_now.astimezone(timezone(timedelta(hours=7)))
+    return vn_time
 
 @router.post("/login", response_model=Token)
 def login_access_token(
@@ -107,7 +113,8 @@ def create_registration_request(
     user_create = UserCreate(
         **user_data,
         admin=False,  # Người dùng mới không có quyền admin
-        status=UserStatusEnum.PENDING  # Mặc định là đang chờ xác nhận
+        status=UserStatusEnum.PENDING,  # Mặc định là đang chờ xác nhận
+        ngay_tao=get_date_time()
     )
     user = create(db, obj_in=user_create)
     

@@ -5,7 +5,7 @@ from app.models.base import Base
 class PaintType(Base):
     __tablename__ = "paint_types"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     paint_type = Column(String, nullable=False, unique=True)
 
     mo_ta_san_pham = Column(Text, nullable=False, default="")

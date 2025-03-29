@@ -44,6 +44,8 @@ def show_users():
         
         for user in users:
             # Hiển thị quyền admin như Có/Không
+            print("user admin = ", user.admin)
+            print("user name = ", user.ho_ten)
             admin_status = "Có" if user.admin else "Không"
 
             
@@ -473,15 +475,15 @@ if __name__ == "__main__":
     try:
         # show_users()
         # show_orders()
-        # show_paint_types()
+        show_paint_types()
         # show_image_resources()
-        show_type_details()
+        # show_type_details()
         
         # show_order_details()
         # show_token_store()
         # show_product_images()
         # show_product_thumbnail()
-        show_cart_database()
+        # show_cart_database()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback

@@ -21,6 +21,7 @@ class UserBase(BaseModel):
     status: UserStatusEnum = UserStatusEnum.PENDING
     date_of_birth: Optional[date] = None
     gender: Optional[UserGender] = None
+    ngay_tao: datetime
 
 class UserCreate(UserBase):
     password: str
