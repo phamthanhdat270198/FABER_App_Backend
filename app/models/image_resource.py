@@ -6,7 +6,9 @@ class ImageResource(Base):
     __tablename__ = "image_resources"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    image_path = Column(Text, nullable=False)
+    # image_path = Column(Text, nullable=False)
+    image_path = Column(String, nullable=False)
+
     type_detail_id = Column(Integer, ForeignKey("type_details.id", ondelete="CASCADE"), nullable=False)
     
     # Relationship với TypeDetail

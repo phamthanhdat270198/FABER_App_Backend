@@ -191,12 +191,12 @@ def seed_image():
     current_file_path = os.path.abspath(__file__)
     project_path = os.path.dirname(os.path.dirname(current_file_path))
     image_paths = os.path.dirname(os.path.dirname(project_path))
-    # img_folder = "faber_imgs"
-    # img_path = os.path.join(image_paths, img_folder)
-    FE_path = "Faber-FE"
-    imgs_folder = r"assets\faber_imgs"
-    img_path = os.path.join(image_paths, FE_path)
-    img_path = os.path.join(img_path, imgs_folder)
+    imgs_folder = "faber_imgs"
+    img_path = os.path.join(image_paths, imgs_folder)
+    # FE_path = "Faber-FE"
+    # imgs_folder = r"faber_imgs"
+    # img_path = os.path.join(image_paths, FE_path)
+    # img_path = os.path.join(img_path, imgs_folder)
     
     try:
         # Get all type details
@@ -256,13 +256,13 @@ def seed_image():
                 
                 # Create relative image path
                 image_path = os.path.join(code_folder, image_file)
-                # image_path = os.path.join(imgs_folder,image_path )
-                image_path = os.path.join(img_path,image_path )
-                img_base64 = image_to_base64(image_path)
+                image_path = os.path.join(imgs_folder,image_path )
+                # image_path = os.path.join(img_path,image_path )
+                # img_base64 = image_to_base64(image_path)
                 # Check if image already exists for this TypeDetail
                 existing_image = db.query(ImageResource).filter(
                     ImageResource.type_detail_id == matching_detail.id,
-                    ImageResource.image_path == img_base64
+                    ImageResource.image_path == image_path
                 ).first()
                 
                 if existing_image:
@@ -271,7 +271,7 @@ def seed_image():
                 
                 # Create new ImageResource
                 new_image = ImageResource(
-                    image_path=img_base64,
+                    image_path=image_path,
                     type_detail_id=matching_detail.id
                 )
                 
@@ -847,11 +847,13 @@ def seed_thumbnails():
     current_file_path = os.path.abspath(__file__)
     project_path = os.path.dirname(os.path.dirname(current_file_path))
     image_paths = os.path.dirname(os.path.dirname(project_path))
-    FE_path = "Faber-FE"
-    thumbs_folder = r"assets\faber_thumbs"
-    thumb_path = os.path.join(image_paths, FE_path)
-    thumb_path = os.path.join(thumb_path, thumbs_folder)
-    print("thumbnail path = ", thumb_path)
+    imgs_folder = "faber_thumbs"
+    thumb_path = os.path.join(image_paths, imgs_folder)
+    # FE_path = "Faber-FE"
+    # thumbs_folder = r"assets\faber_thumbs"
+    # thumb_path = os.path.join(image_paths, FE_path)
+    # thumb_path = os.path.join(thumb_path, thumbs_folder)
+    # print("thumbnail path = ", thumb_path)
     try:
         
         # Get all type details
@@ -911,14 +913,14 @@ def seed_thumbnails():
                 
                 # Create relative thumbnail path
                 thumbnail_path = os.path.join(code_folder, thumbnail_file)
-                # thumbnail_path = os.path.join(thumbs_folder, thumbnail_path)
-                thumbnail_path = os.path.join(thumb_path, thumbnail_path)
-                img_base64 = image_to_base64(thumbnail_path)
-                print("type image base ==== ", type(img_base64))
+                thumbnail_path = os.path.join(imgs_folder, thumbnail_path)
+                # thumbnail_path = os.path.join(thumb_path, thumbnail_path)
+                # img_base64 = image_to_base64(thumbnail_path)
+                # print("type image base ==== ", type(img_base64))
                 # Check if thumbnail already exists for this TypeDetail
                 existing_thumbnail = db.query(Thumbnail).filter(
                     Thumbnail.type_detail_id == matching_detail.id,
-                    Thumbnail.path_to_thumbnail == img_base64
+                    Thumbnail.path_to_thumbnail == thumbnail_path
                 ).first()
                 
                 if existing_thumbnail:
@@ -927,7 +929,7 @@ def seed_thumbnails():
                 
                 # Create new Thumbnail
                 new_thumbnail = Thumbnail(
-                    path_to_thumbnail=img_base64,
+                    path_to_thumbnail=thumbnail_path,
                     type_detail_id=matching_detail.id
                 )
                 
