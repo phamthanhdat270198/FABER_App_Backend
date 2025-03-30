@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from app.models.base import Base
 
@@ -6,7 +6,7 @@ class ImageResource(Base):
     __tablename__ = "image_resources"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    image_path = Column(String, nullable=False)
+    image_path = Column(Text, nullable=False)
     type_detail_id = Column(Integer, ForeignKey("type_details.id", ondelete="CASCADE"), nullable=False)
     
     # Relationship với TypeDetail

@@ -1,12 +1,14 @@
 import os
 import sys
-import uuid
 import random
 from datetime import datetime, timezone, timedelta, date
 import traceback
-import re
 
 import secrets
+import base64
+from PIL import Image
+import io
+
 
 # Thêm thư mục gốc vào sys.path để import module app
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -40,6 +42,30 @@ def get_date_time():
     # Định dạng chuỗi
     # formatted_time = vn_time.strftime("%Y-%m-%d %H:%M:%S")
     return vn_time
+
+def image_to_base64(image_path):
+    """
+    Chuyển đổi hình ảnh thành chuỗi base64
+    
+    Args:
+        image_path (str): Đường dẫn đến file hình ảnh
+        
+    Returns:
+        str: Chuỗi base64 của hình ảnh
+    """
+    # Kiểm tra file có tồn tại không
+    if not os.path.isfile(image_path):
+        raise FileNotFoundError(f"Không tìm thấy file: {image_path}")
+    
+    # Đọc file hình ảnh
+    with open(image_path, "rb") as image_file:
+        # Mã hóa file thành base64
+        encoded_string = base64.b64encode(image_file.read())
+        
+    # Chuyển bytes sang string
+    base64_string = encoded_string.decode('utf-8')
+    
+    return base64_string
 
 def init_db():
     # Tạo tất cả các bảng trong database
@@ -165,9 +191,12 @@ def seed_image():
     current_file_path = os.path.abspath(__file__)
     project_path = os.path.dirname(os.path.dirname(current_file_path))
     image_paths = os.path.dirname(os.path.dirname(project_path))
-    img_folder = "faber_imgs"
-    img_path = os.path.join(image_paths, img_folder)
-    
+    # img_folder = "faber_imgs"
+    # img_path = os.path.join(image_paths, img_folder)
+    FE_path = "Faber-FE"
+    imgs_folder = r"assets\faber_imgs"
+    img_path = os.path.join(image_paths, FE_path)
+    img_path = os.path.join(img_path, imgs_folder)
     
     try:
         # Get all type details
@@ -227,11 +256,13 @@ def seed_image():
                 
                 # Create relative image path
                 image_path = os.path.join(code_folder, image_file)
+                # image_path = os.path.join(imgs_folder,image_path )
                 image_path = os.path.join(img_path,image_path )
+                img_base64 = image_to_base64(image_path)
                 # Check if image already exists for this TypeDetail
                 existing_image = db.query(ImageResource).filter(
                     ImageResource.type_detail_id == matching_detail.id,
-                    ImageResource.image_path == image_path
+                    ImageResource.image_path == img_base64
                 ).first()
                 
                 if existing_image:
@@ -240,7 +271,7 @@ def seed_image():
                 
                 # Create new ImageResource
                 new_image = ImageResource(
-                    image_path=image_path,
+                    image_path=img_base64,
                     type_detail_id=matching_detail.id
                 )
                 
@@ -644,7 +675,7 @@ def seed_type_detail():
                             price=5850000,
                             m2_cover=120,
                             promotion="",
-                            features= "Sơn men sứ chống bám bụi cap cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
+                            features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
                             base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
                         ),
                         TypeDetail(
@@ -656,7 +687,7 @@ def seed_type_detail():
                             price=2350000,
                             m2_cover=30,
                             promotion="",
-                            features= "Sơn men sứ chống bám bụi cap cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
+                            features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
                             base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
                         ),
                         TypeDetail(
@@ -668,7 +699,7 @@ def seed_type_detail():
                             price=550000,
                             m2_cover=10,
                             promotion="",
-                            features= "Sơn men sứ chống bám bụi cap cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
+                            features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
                             base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
                         )
                     ]
@@ -816,9 +847,11 @@ def seed_thumbnails():
     current_file_path = os.path.abspath(__file__)
     project_path = os.path.dirname(os.path.dirname(current_file_path))
     image_paths = os.path.dirname(os.path.dirname(project_path))
-    thumbs_folder = "faber_thumbs"
-    thumb_path = os.path.join(image_paths, thumbs_folder)
-    
+    FE_path = "Faber-FE"
+    thumbs_folder = r"assets\faber_thumbs"
+    thumb_path = os.path.join(image_paths, FE_path)
+    thumb_path = os.path.join(thumb_path, thumbs_folder)
+    print("thumbnail path = ", thumb_path)
     try:
         
         # Get all type details
@@ -878,11 +911,14 @@ def seed_thumbnails():
                 
                 # Create relative thumbnail path
                 thumbnail_path = os.path.join(code_folder, thumbnail_file)
-                
+                # thumbnail_path = os.path.join(thumbs_folder, thumbnail_path)
+                thumbnail_path = os.path.join(thumb_path, thumbnail_path)
+                img_base64 = image_to_base64(thumbnail_path)
+                print("type image base ==== ", type(img_base64))
                 # Check if thumbnail already exists for this TypeDetail
                 existing_thumbnail = db.query(Thumbnail).filter(
                     Thumbnail.type_detail_id == matching_detail.id,
-                    Thumbnail.path_to_thumbnail == thumbnail_path
+                    Thumbnail.path_to_thumbnail == img_base64
                 ).first()
                 
                 if existing_thumbnail:
@@ -891,7 +927,7 @@ def seed_thumbnails():
                 
                 # Create new Thumbnail
                 new_thumbnail = Thumbnail(
-                    path_to_thumbnail=thumbnail_path,
+                    path_to_thumbnail=img_base64,
                     type_detail_id=matching_detail.id
                 )
                 
@@ -921,8 +957,8 @@ if __name__ == "__main__":
         init_db()
         # seed_data()
         # seed_paint_type()
-        # clear_existing_images()
-        # seed_image()
+        clear_existing_images()
+        seed_image()
         clear_existing_thumbnails()
         seed_thumbnails()
         # seed_product_images()

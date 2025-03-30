@@ -63,6 +63,7 @@ class UserBasicInfo(BaseModel):
     status: UserStatusEnum
     date_of_birth: Optional[date] = None
     gender: Optional[str] = None
+    diem_thuong: float
     
     class Config:
         orm_mode = True

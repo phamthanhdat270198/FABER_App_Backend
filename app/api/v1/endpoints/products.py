@@ -114,49 +114,6 @@ def get_product_detail(
         "thumbnails": thumbnail_paths
     }
 
-# @router.get("/detail/{product_id}", response_model=ProductDetailResponse)
-# def get_product_detail(
-#     product_id: int = Path(..., title="ID của sản phẩm", ge=1),
-#     db: Session = Depends(get_db)
-# ):
-#     """
-#     API 3: Lấy chi tiết đầy đủ của một sản phẩm
-#     """
-#     # Lấy thông tin sản phẩm
-#     product = db.query(TypeDetail).filter(TypeDetail.id == product_id).first()
-    
-#     if not product:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="Không tìm thấy sản phẩm"
-#         )
-    
-#     # Lấy thông tin loại sơn
-#     paint_type = db.query(PaintType).filter(PaintType.id == product.paint_type_id).first()
-    
-#     # Lấy tất cả ảnh của sản phẩm
-#     images = db.query(ImageResource).filter(ImageResource.type_detail_id == product_id).all()
-#     image_paths = [img.image_path for img in images]
-    
-#     # Tạo response
-#     return {
-#         "id": product.id,
-#         "product_name": product.product,
-#         "code": product.code,
-#         "package": product.package,
-#         "volume": product.volume,
-#         "price": product.price,
-#         "m2_cover": product.m2_cover,
-#         "promotion": product.promotion,
-#         "paint_type_id": paint_type.id,
-#         "paint_type_name": paint_type.paint_type,
-#         "mo_ta_san_pham": paint_type.mo_ta_san_pham,
-#         "thanh_phan": paint_type.thanh_phan,
-#         "huong_dan_su_dung": paint_type.huong_dan_su_dung,
-#         "luu_y": paint_type.luu_y,
-#         "bao_quan": paint_type.bao_quan,
-#         "images": image_paths
-#     }
 
 @router.get("/detail/{product_id}", response_model=ProductDetailGroupedResponse)
 def get_product_detail(
@@ -188,14 +145,15 @@ def get_product_detail(
     
     for prod in all_products:
         # Lấy ảnh của sản phẩm này
-        images = db.query(ImageResource).filter(ImageResource.type_detail_id == prod.id).all()
+        images = db.query(ImageResource).filter(ImageResource.type_detail_id == prod.id).first()
         # image_paths = [img.image_path for img in images]
-        image_paths = images[0].image_path
+        # print("len images = ", len(images))
+        image_paths = images.image_path
         
         # Lấy thumbnails của sản phẩm này
-        thumbnails = db.query(Thumbnail).filter(Thumbnail.type_detail_id == prod.id).all()
+        thumbnails = db.query(Thumbnail).filter(Thumbnail.type_detail_id == prod.id).first()
         # thumbnail_paths = [thumb.path_to_thumbnail for thumb in thumbnails]
-        thumbnail_paths = thumbnails[0].path_to_thumbnail
+        thumbnail_paths = thumbnails.path_to_thumbnail
         
         all_variants.append({
             "id": prod.id,
@@ -215,24 +173,20 @@ def get_product_detail(
     # Nhóm các phiên bản theo volume
     volume_groups = {}
     for variant in all_variants:
-        print("variant == ", variant)
         volume = variant.get("volume")
         if volume not in volume_groups:
             volume_groups[volume] = []
         volume_groups[volume] =  variant
     
-    print("volume groups == ", volume_groups)
+    # print("volume groups == ", volume_groups)
     # Chuyển đổi dict thành list và sắp xếp theo volume
     grouped_variants = []
     for volume, variants in sorted(volume_groups.items(), key=lambda x: x[0] if x[0] is not None else 0):
-        print("volume = ", volume)
-        print("variants = ", variants)
         grouped_variants.append({
             "volume": volume,
             "variants": variants
         })
     
-    print("group variants = ", grouped_variants )
     # Tạo response
     return {
         "id": product.id,

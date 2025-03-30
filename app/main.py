@@ -46,11 +46,11 @@ os.makedirs(static_dir, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 @app.get("/admin-login")
-async def admin_login_page():
+def admin_login_page():
     return FileResponse(os.path.join(static_dir, "admin_login.html"))
 
 @app.get("/admin")
-async def admin_page():
+def admin_page():
     return FileResponse(os.path.join(static_dir, "admin.html"))
 
 if __name__ == "__main__":
