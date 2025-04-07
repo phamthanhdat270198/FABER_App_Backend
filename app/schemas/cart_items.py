@@ -29,6 +29,7 @@ class CartItemThumbnailResponse(BaseModel):
     price: float
     thumbnail: str
     reward: int
+    code: str
 
     class Config:
         orm_mode = True

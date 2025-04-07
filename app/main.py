@@ -21,11 +21,11 @@ origins = [
     "http://localhost:8081",
     "http://localhost:8086",
     "http://localhost:3000",
-    "https://localhost",
-    "https://localhost:8080",
-    "https://localhost:8081",
-    "https://localhost:8086",
-    "https://localhost:3000"
+    #"https://localhost",
+    #"https://localhost:8080",
+    #"https://localhost:8081",
+    #"https://localhost:8086",
+    #"https://localhost:3000"
 ]
 
 app.add_middleware(
@@ -64,5 +64,5 @@ if __name__ == "__main__":
     project_root = os.path.dirname(current_dir)
     ssl_keyfile = os.path.join(project_root, "key.pem")
     ssl_certfile = os.path.join(project_root, "cert.pem")
-    uvicorn.run(app, host="0.0.0.0", port=8500, ssl_keyfile=ssl_keyfile, ssl_certfile=ssl_certfile)
-    #uvicorn.run("main:app", host="0.0.0.0", port=8500)
+    #uvicorn.run(app, host="0.0.0.0", port=8500, ssl_keyfile=ssl_keyfile, ssl_certfile=ssl_certfile)
+    uvicorn.run(app, host="0.0.0.0", port=8500)

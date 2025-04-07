@@ -63,7 +63,7 @@ def add_item_to_cart(
     if existing_item:
         # Cập nhật số lượng nếu sản phẩm đã tồn tại
         # co the thay doi cho phu hop voi nhu cau
-        existing_item.quantity == item.quantity
+        existing_item.quantity += item.quantity
         db.commit()
         db.refresh(existing_item)
         
@@ -134,7 +134,8 @@ def get_cart_items(
             product=type_detail.product,
             price=type_detail.price or 0, 
             thumbnail=thumbnail_path,
-            reward=item.quantity * REWARD
+            reward=item.quantity * REWARD,
+            code=type_detail.code
             
         ))
     
@@ -153,12 +154,13 @@ def remove_cart_item(
         )
     
     # Lấy các mặt hàng từ giỏ hàng của user hiện tại
+    
     cart_items = db.query(CartItem).join(Cart).filter(
         Cart.user_id == current_user.id,
         CartItem.id.in_(delete_ids.delete_ids),
         CartItem.is_active == True
     ).all()
-    
+    # print("cart_items", cart_items)
     if not cart_items:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -212,7 +214,7 @@ def update_cart_item_quantity(
         )
     
     # Cập nhật số lượng
-    cart_item.quantity += quantity
+    cart_item.quantity == quantity
     cart_item.color_code = color_code
     db.commit()
     db.refresh(cart_item)
