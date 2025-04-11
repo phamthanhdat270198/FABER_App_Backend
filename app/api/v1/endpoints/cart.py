@@ -214,7 +214,7 @@ def update_cart_item_quantity(
         )
     
     # Cập nhật số lượng
-    cart_item.quantity == quantity
+    cart_item.quantity = quantity
     cart_item.color_code = color_code
     db.commit()
     db.refresh(cart_item)

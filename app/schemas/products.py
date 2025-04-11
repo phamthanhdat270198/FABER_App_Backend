@@ -16,6 +16,7 @@ class ProductItem(BaseModel):
     volume: Optional[float] = None
     price: Optional[float] = None
     image_path: Optional[str] = None
+    vname: Optional[str] = None
 
 class ProductListResponse(BaseModel):
     paint_type_id: int
@@ -69,6 +70,7 @@ class ProductVariant(BaseModel):
     thumbnails: str
     is_current: bool = False
     features: str
+    vname: str
 
 class VolumeGroup(BaseModel):
     volume: Optional[float] = None

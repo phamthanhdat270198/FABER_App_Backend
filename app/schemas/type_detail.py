@@ -10,23 +10,23 @@ class TypeDetailBase(BaseModel):
     price: Optional[float] = None
     m2_cover: Optional[float] = None
     promotion: Optional[str] = None
-    base64: Optional[str] = None
+    vname: Optional[str] = None
     is_active: bool = True
 
 class TypeDetailCreate(TypeDetailBase):
     pass
 
-class TypeDetailUpdate(BaseModel):
-    paint_type_id: Optional[int] = None
-    product: Optional[str] = None
-    code: Optional[str] = None
-    package: Optional[str] = None
-    volume: Optional[float] = None
-    price: Optional[float] = None
-    m2_cover: Optional[float] = None
-    promotion: Optional[str] = None
-    base64: Optional[str] = None
-    is_active: bool = True
+# class TypeDetailUpdate(BaseModel):
+#     paint_type_id: Optional[int] = None
+#     product: Optional[str] = None
+#     code: Optional[str] = None
+#     package: Optional[str] = None
+#     volume: Optional[float] = None
+#     price: Optional[float] = None
+#     m2_cover: Optional[float] = None
+#     promotion: Optional[str] = None
+#     vname: Optional[str] = None
+#     is_active: bool = True
 
 class TypeDetailResponse(TypeDetailBase):
     id: int

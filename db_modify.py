@@ -327,8 +327,8 @@ def seed_paint_types1(db_path="app.db"):
                 "is_active": True
             },
             {
-                "paint_type": "Sơn chống thấm màu",
-                "mo_ta_san_pham": "Sơn chống thấm màu là loại sơn gốc nước, có khả năng chống thấm tối ưu và mang lại lớp phủ màu sắc thẩm mỹ cho công trình. Sản phẩm thích hợp cho tường ngoài trời, sân thượng và các khu vực thường xuyên tiếp xúc với nước.",
+                "paint_type": "Sơn chống thấm",
+                "mo_ta_san_pham": "Sơn chống thấm là loại sơn gốc nước, có khả năng chống thấm tối ưu và mang lại lớp phủ màu sắc thẩm mỹ cho công trình. Sản phẩm thích hợp cho tường ngoài trời, sân thượng và các khu vực thường xuyên tiếp xúc với nước.",
                 "thanh_phan": "Nhựa Acrylic chống thấm.\nChất tạo màu bền thời tiết.\nPhụ gia chống rêu mốc.\nChất chống kiềm hóa.",
                 "huong_dan_su_dung": "Làm sạch và loại bỏ các lớp sơn cũ, bụi bẩn trên bề mặt.\nKhuấy đều sơn trước khi sử dụng.\nThi công 2 lớp, mỗi lớp cách nhau ít nhất 3 giờ.\nCó thể pha loãng với nước sạch 5-10% nếu cần.",
                 "luu_y": None,
@@ -641,13 +641,33 @@ def clear_type_details_with_sqlite(db_path="app.db"):
             pass
         return False
 
+def delete_table(db_path="app.db", table_name="type_details"):
+    """Delete a table from the SQLite database"""
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Check if the table exists
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        if not cursor.fetchone():
+            print(f"Table '{table_name}' does not exist in the database")
+            return False
+        
+        # Drop the table
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        conn.commit()
+        print(f"Table '{table_name}' successfully deleted")
+        return True
+    except Exception as e:
+        print(f"Error deleting table: {e}")
+
 if __name__ == "__main__":
     # Lấy đường dẫn đến database từ tham số dòng lệnh hoặc sử dụng giá trị mặc định
     if len(sys.argv) > 1:
         db_path = sys.argv[1]
     else:
         # Đường dẫn mặc định
-        db_path = r"sqlite_data\app.db"
+        db_path = "sqlite_data/app.db"
         print(f"Sử dụng database mặc định: {db_path}")
         print("Gợi ý: Bạn có thể chỉ định đường dẫn database qua tham số dòng lệnh")
         print("Ví dụ: python show_tables.py path/to/your/database.sqlite")
@@ -659,3 +679,4 @@ if __name__ == "__main__":
     # clear_paint_types(db_path)
     # seed_paint_types1(db_path)
     clear_type_details_with_sqlite(db_path)
+    # delete_table(db_path)

@@ -43,29 +43,7 @@ def get_date_time():
     # formatted_time = vn_time.strftime("%Y-%m-%d %H:%M:%S")
     return vn_time
 
-def image_to_base64(image_path):
-    """
-    Chuyển đổi hình ảnh thành chuỗi base64
-    
-    Args:
-        image_path (str): Đường dẫn đến file hình ảnh
-        
-    Returns:
-        str: Chuỗi base64 của hình ảnh
-    """
-    # Kiểm tra file có tồn tại không
-    if not os.path.isfile(image_path):
-        raise FileNotFoundError(f"Không tìm thấy file: {image_path}")
-    
-    # Đọc file hình ảnh
-    with open(image_path, "rb") as image_file:
-        # Mã hóa file thành base64
-        encoded_string = base64.b64encode(image_file.read())
-        
-    # Chuyển bytes sang string
-    base64_string = encoded_string.decode('utf-8')
-    
-    return base64_string
+
 
 def init_db():
     # Tạo tất cả các bảng trong database
@@ -258,7 +236,7 @@ def seed_image():
                 image_path = os.path.join(code_folder, image_file)
                 image_path = os.path.join(imgs_folder,image_path )
                 # image_path = os.path.join(img_path,image_path )
-                # img_base64 = image_to_base64(image_path)
+                # img_vname = image_to_vname(image_path)
                 # Check if image already exists for this TypeDetail
                 existing_image = db.query(ImageResource).filter(
                     ImageResource.type_detail_id == matching_detail.id,
@@ -336,7 +314,7 @@ def seed_type_detail():
                             m2_cover=80,
                             promotion="",
                             features= "Sơn mịn nội thất",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn mịn nội thất cao câp"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -348,7 +326,7 @@ def seed_type_detail():
                             m2_cover=90,
                             promotion="",
                             features= "Sơn mịn ngoại thất\nĐộ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn mịn ngoại thất cao cấp"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -360,7 +338,7 @@ def seed_type_detail():
                             m2_cover=27,
                             promotion="",
                             features= "Sơn mịn ngoại thất\nĐộ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn mịn ngoại thất cao cấp"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -372,7 +350,7 @@ def seed_type_detail():
                             m2_cover=90,
                             promotion="",
                             features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn siêu trắng trần"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -384,7 +362,7 @@ def seed_type_detail():
                             m2_cover=22,
                             promotion="",
                             features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn siêu trắng trần"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -396,7 +374,7 @@ def seed_type_detail():
                             m2_cover=100,
                             promotion="",
                             features= "Sơn siêu mịn lau chùi nội thất cao cấp\nChống thấm tốt, chống nấm mốc, rửa sạch vết bẩn, độ bền màu cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn siêu mịn lau chùi"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -408,7 +386,7 @@ def seed_type_detail():
                             m2_cover=25,
                             promotion="",
                             features= "Sơn siêu mịn lau chùi nội thất cao cấp\nChống thấm tốt, chống nấm mốc, rửa sạch vết bẩn, độ bền màu cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn siêu mịn lau chùi"  # Để trống hoặc thêm dữ liệu vname thực tế
                         )
                     ]
                     db.add_all(son_min_details)
@@ -427,7 +405,7 @@ def seed_type_detail():
                             m2_cover=115,
                             promotion="",
                             features= "Sơn bóng nội thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng nội"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_bong.id,
@@ -439,7 +417,7 @@ def seed_type_detail():
                             m2_cover=32,
                             promotion="",
                             features= "Sơn bóng nội thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng nội"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_bong.id,
@@ -451,7 +429,7 @@ def seed_type_detail():
                             m2_cover=35,
                             promotion="",
                             features= "Sơn bóng ngoại thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng ngoại"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_bong.id,
@@ -463,13 +441,13 @@ def seed_type_detail():
                             m2_cover=130,
                             promotion="",
                             features= "Sơn bóng ngoại thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng ngoại"  # Để trống hoặc thêm dữ liệu vname thực tế
                         )
                     ]
                     db.add_all(son_bong_details)
                 
                 # Tạo dữ liệu mẫu cho sơn epoxy (nếu có)
-                son_chong_tham_mau = next((pt for pt in paint_types if pt.paint_type == "Sơn chống thấm màu"), None)
+                son_chong_tham_mau = next((pt for pt in paint_types if pt.paint_type == "Sơn chống thấm"), None)
                 if son_chong_tham_mau:
                     son_chong_tham_mau_details = [
                         TypeDetail(
@@ -481,8 +459,8 @@ def seed_type_detail():
                             price=3760000,
                             m2_cover=85,
                             promotion="",
-                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủtuyệt đối, chống nóng, độ bền cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủ tuyệt đối, chống nóng, độ bền cao",
+                            vname="Sơn chống thấm màu"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_chong_tham_mau.id,
@@ -493,8 +471,8 @@ def seed_type_detail():
                             price=3760000,
                             m2_cover=15,
                             promotion="",
-                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủtuyệt đối, chống nóng, độ bền cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủ tuyệt đối, chống nóng, độ bền cao",
+                            vname="Sơn chống thấm màu"  # Để trống hoặc thêm dữ liệu vname thực tế
                         )
                     ]
                     db.add_all(son_chong_tham_mau_details)
@@ -513,7 +491,7 @@ def seed_type_detail():
                             m2_cover=120,
                             promotion="",
                             features= "Sơn lót siêu kháng kiềm muối tường ẩm\nChống kiềm muối đặc biệt",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót siêu kháng kiềm muối ngoại thất đặc biệt"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -525,7 +503,7 @@ def seed_type_detail():
                             m2_cover=35,
                             promotion="",
                             features= "Sơn lót siêu kháng kiềm muối tường ẩm\nChống kiềm muối đặc biệt",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót siêu kháng kiềm muối ngoại thất đặc biệt"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -537,7 +515,7 @@ def seed_type_detail():
                             m2_cover=120,
                             promotion="",
                             features= "Sơn lót kháng kiềm nội thất đặc biệt\nKháng kiềm, chống rêu mốc, tăng độ bám dính, chống loang ố",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót kháng kiềm muối nội thất đặc biệt"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -549,7 +527,7 @@ def seed_type_detail():
                             m2_cover=35,
                             promotion="",
                             features= "Sơn lót kháng kiềm nội thất đặc biệt\nKháng kiềm, chống rêu mốc, tăng độ bám dính, chống loang ố",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót kháng kiềm muối nội thất đặc biệt"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -561,7 +539,7 @@ def seed_type_detail():
                             m2_cover=120,
                             promotion="",
                             features= "Sơn lót kháng kiềm ngoại thất\nKháng kiềm, nấm mốc, tăng độ bám dính",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót ngoại thất eco"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -573,7 +551,7 @@ def seed_type_detail():
                             m2_cover=120,
                             promotion="",
                             features= "Sơn lót kháng kiềm ngoại thất cao cấp\nChống muối, chống nấm mốc, chống phấn hóa, độ bền cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót kháng kiềm ngoại thất cao cấp"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -585,7 +563,7 @@ def seed_type_detail():
                             m2_cover=35,
                             promotion="",
                             features= "Sơn lót kháng kiềm ngoại thất cao cấp\nChống muối, chống nấm mốc, chống phấn hóa, độ bền cao",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót kháng kiềm ngoại thất cao cấp"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -597,7 +575,7 @@ def seed_type_detail():
                             m2_cover=110,
                             promotion="",
                             features= "Sơn lót kháng kiềm nội thất\nKháng kiềm, chống nấm mốc, tăng độ bám dính, độ phủ",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót nội thất eco"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -609,7 +587,7 @@ def seed_type_detail():
                             m2_cover=115,
                             promotion="",
                             features= "Sơn lót kháng kiềm nội thất cao cấp\nThẩm thấu, bám dính, độ phủ cao, chống phấn hóa, chống loang ố màu",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót nội thất cao cấp"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -621,7 +599,7 @@ def seed_type_detail():
                             m2_cover=33,
                             promotion="",
                             features= "Sơn lót kháng kiềm nội thất cao cấp\nThẩm thấu, bám dính, độ phủ cao, chống phấn hóa, chống loang ố màu",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn lót nội thất cao cấp"  # Để trống hoặc thêm dữ liệu vname thực tế
                         )
                     ]
                     db.add_all(son_lot_chong_kiem_details)
@@ -640,7 +618,7 @@ def seed_type_detail():
                             m2_cover=120,
                             promotion="",
                             features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng men sứ nội thất"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=metro_lux.id,
@@ -652,7 +630,7 @@ def seed_type_detail():
                             m2_cover=30,
                             promotion="",
                             features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng men sứ nội thất"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=metro_lux.id,
@@ -664,7 +642,7 @@ def seed_type_detail():
                             m2_cover=10,
                             promotion="",
                             features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng men sứ nội thất"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=metro_lux.id,
@@ -676,7 +654,7 @@ def seed_type_detail():
                             m2_cover=120,
                             promotion="",
                             features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng men sứ ngoại thất chống bám bụi"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=metro_lux.id,
@@ -688,7 +666,7 @@ def seed_type_detail():
                             m2_cover=30,
                             promotion="",
                             features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng men sứ ngoại thất chống bám bụi"  # Để trống hoặc thêm dữ liệu vname thực tế
                         ),
                         TypeDetail(
                             paint_type_id=metro_lux.id,
@@ -700,7 +678,7 @@ def seed_type_detail():
                             m2_cover=10,
                             promotion="",
                             features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
-                            base64=None  # Để trống hoặc thêm dữ liệu base64 thực tế
+                            vname="Sơn bóng men sứ ngoại thất chống bám bụi"  # Để trống hoặc thêm dữ liệu vname thực tế
                         )
                     ]
                     db.add_all(metro_lux_details)
@@ -915,8 +893,8 @@ def seed_thumbnails():
                 thumbnail_path = os.path.join(code_folder, thumbnail_file)
                 thumbnail_path = os.path.join(imgs_folder, thumbnail_path)
                 # thumbnail_path = os.path.join(thumb_path, thumbnail_path)
-                # img_base64 = image_to_base64(thumbnail_path)
-                # print("type image base ==== ", type(img_base64))
+                # img_vname = image_to_vname(thumbnail_path)
+                # print("type image base ==== ", type(img_vname))
                 # Check if thumbnail already exists for this TypeDetail
                 existing_thumbnail = db.query(Thumbnail).filter(
                     Thumbnail.type_detail_id == matching_detail.id,
@@ -959,9 +937,9 @@ if __name__ == "__main__":
         init_db()
         # seed_data()
         # seed_paint_type()
-        clear_existing_images()
+        # clear_existing_images()
         seed_image()
-        clear_existing_thumbnails()
+        # clear_existing_thumbnails()
         seed_thumbnails()
         # seed_product_images()
         # seed_type_detail()

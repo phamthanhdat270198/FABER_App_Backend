@@ -15,7 +15,7 @@ class TypeDetail(Base):
     price = Column(Float, nullable=True)
     m2_cover = Column(Float, nullable=True)
     promotion = Column(String, nullable=True)
-    base64 = Column(Text, nullable=True)
+    vname = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
     features = Column(String, nullable=True)
