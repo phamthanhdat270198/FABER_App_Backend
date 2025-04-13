@@ -28,6 +28,7 @@ from app.models.token_store import TokenStore
 from app.models.thumbnail import Thumbnail
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
+from app.models.rewards_info import RewardInfo, RewardType
 import shutil
 from pathlib import Path
 from alembic import op
@@ -851,7 +852,7 @@ def seed_thumbnails():
         print(f"Found {len(code_folders)} code folders in {thumb_path}")
         
         for code_folder in code_folders:
-            folder_path = os.path.join(thumb_path   , code_folder)
+            folder_path = os.path.join(thumb_path , code_folder)
             if not os.path.isdir(folder_path):
                 continue
                 
@@ -931,6 +932,83 @@ def seed_thumbnails():
     finally:
         db.close()
 
+def seed_rewards():
+    db = SessionLocal()
+    # Xóa dữ liệu cũ (tùy chọn)
+    current_file_path = os.path.abspath(__file__)
+    project_path = os.path.dirname(os.path.dirname(current_file_path))
+    image_paths = os.path.dirname(os.path.dirname(project_path))
+    imgs_folder = "faber_reward_imgs"
+    db.query(RewardInfo).delete()
+    
+    # Phần thưởng thông thường
+    regular_rewards = [
+        RewardInfo(
+            name="Nồi chiên không dầu",
+            type=RewardType.REGULAR,
+            is_special=False,
+            image_url="faber_reward_imgs/noi_chien.png"
+        ),
+        RewardInfo(
+            name="Máy lọc không khí",
+            type=RewardType.REGULAR,
+            is_special=False,
+            image_url="faber_reward_imgs/may_loc_kk.png"
+        ),
+        RewardInfo(
+            name="Máy hút bụi cầm tay",
+            type=RewardType.REGULAR,
+            is_special=False,
+            image_url="faber_reward_imgs/may_hut_bui.png"
+        ),
+
+        RewardInfo(
+            name="2 thùng sơn lót nội thất cao cấp",
+            type=RewardType.REGULAR,
+            is_special=False,
+            image_url="faber_reward_imgs/son.jpg"
+        )
+    ]
+    #phần thưởng seeding
+    ignore_rewards = [
+        RewardInfo(
+            name="TV Samsung",
+            type=RewardType.IGNORE,
+            is_special=False,
+            image_url="faber_reward_imgs/tv_samsung.jpg"
+        )
+    ]
+    # Phần thưởng đặc biệt
+    special_rewards = [
+        RewardInfo(
+            name="Nửa chỉ vàng",
+            type=RewardType.SPECIAL,
+            is_special=True,
+            special_spin_number=5,
+            image_url="faber_reward_imgs/vang.jpg"
+        ),
+        RewardInfo(
+            name="1 chỉ vàng",
+            type=RewardType.SPECIAL,
+            is_special=True,
+            special_spin_number=9,
+            image_url="faber_reward_imgs/vang.png"
+        ),
+        RewardInfo(
+            name="Xe Vision",
+            type=RewardType.SPECIAL,
+            is_special=True,
+            special_spin_number=15,
+            image_url="faber_reward_imgs/xe_vision.png"
+        )
+    ]
+    
+    # Thêm tất cả phần thưởng vào database
+    db.add_all(regular_rewards + ignore_rewards + special_rewards )
+    db.commit()
+    
+    print(f"Đã seed {len(regular_rewards)} phần thưởng thông thường và {len(special_rewards)} phần thưởng đặc biệt")
+
 if __name__ == "__main__":
     try:
         print("Bắt đầu khởi tạo database...")
@@ -945,6 +1023,7 @@ if __name__ == "__main__":
         # seed_type_detail()
         # seed_order_detail()
         # seed_token_store()
+        seed_rewards()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")

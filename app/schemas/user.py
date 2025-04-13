@@ -1,7 +1,8 @@
 from pydantic import BaseModel, validator
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, date
 from enum import Enum
+# from app.models.rewards_info import  RewardType
 
 class UserStatusEnum(str, Enum):
     PENDING = "PENDING"
@@ -11,6 +12,11 @@ class UserGender(str, Enum):
     MALE = "male"
     FEMALE = "female"
     OTHER = "other"
+
+class RewardType(str, Enum):
+    REGULAR = "REGULAR"
+    SPECIAL = "SPECIAL"
+    IGNORE = "IGNORE"
 
 class UserBase(BaseModel):
     ho_ten: str
@@ -110,3 +116,29 @@ class UseSpinResponse(BaseModel):
     remaining_spins: int
     message: str
     reward_type: str
+    reward_img: Optional[str]
+
+class RewardBase(BaseModel):
+    name: str
+    type: RewardType
+
+    class Config:
+        orm_mode = True
+
+class RewardList(BaseModel):
+    regular_rewards: List[RewardBase]
+    special_rewards: List[RewardBase]
+    ignore_rewards:List[RewardBase]
+    total_count: int
+
+class SpinRewardBase(BaseModel):
+    id: int
+    user_id: int
+    reward_type: str
+    is_claimed: bool
+    spin_number: int
+    created_at: datetime
+    claimed_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True

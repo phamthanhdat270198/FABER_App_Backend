@@ -661,6 +661,24 @@ def delete_table(db_path="app.db", table_name="type_details"):
     except Exception as e:
         print(f"Error deleting table: {e}")
 
+def drop_rewards_table(db_path='app.db'):  # Thay đổi đường dẫn tới file database của bạn
+    
+    try:
+        # Kết nối đến database
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Xóa bảng rewards
+        cursor.execute("DROP TABLE IF EXISTS rewards")
+        
+        # Commit thay đổi và đóng kết nối
+        conn.commit()
+        conn.close()
+        
+        print("Đã xóa thành công bảng rewards")
+    except Exception as e:
+        print(f"Lỗi khi xóa bảng rewards: {str(e)}")
+
 if __name__ == "__main__":
     # Lấy đường dẫn đến database từ tham số dòng lệnh hoặc sử dụng giá trị mặc định
     if len(sys.argv) > 1:
@@ -678,5 +696,6 @@ if __name__ == "__main__":
     # clear_all_tables(db_path)
     # clear_paint_types(db_path)
     # seed_paint_types1(db_path)
-    clear_type_details_with_sqlite(db_path)
+    # clear_type_details_with_sqlite(db_path)
     # delete_table(db_path)
+    drop_rewards_table(db_path)

@@ -29,6 +29,7 @@ class User(Base):
     # Relationship với Order - sử dụng string để tránh circular import
     tokens = relationship("TokenStore", back_populates="user", cascade="all, delete-orphan")
     carts = relationship("Cart", back_populates="user", cascade="all, delete-orphan" )
+    spin_reward = relationship("SpinReward", back_populates='user')
 
     def __repr__(self):
         return f"<User(id={self.id}, ho_ten='{self.ho_ten}', diem_thuong={self.diem_thuong})>"

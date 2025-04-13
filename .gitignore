@@ -5,3 +5,4 @@ app/db/__pycache__/init_db.cpython-313.pyc
 app/models/__pycache__/*
 venv
 create_thumbnail.py
+mv_image_instr_to_server.txt

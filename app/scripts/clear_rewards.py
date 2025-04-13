@@ -1,5 +1,5 @@
 from app.db.base import SessionLocal
-from app.models.rewards import SpinReward
+from app.models.rewards_spin import SpinReward
 import os
 from tabulate import tabulate
 
@@ -68,6 +68,8 @@ def clear_all_spin_rewards():
         print(f"Đã xảy ra lỗi khi xóa dữ liệu: {str(e)}")
     finally:
         db.close()
+
+
 
 if __name__ == "__main__":
     clear_all_spin_rewards()

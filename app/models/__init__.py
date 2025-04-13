@@ -10,4 +10,5 @@ from app.models.token_store import TokenStore
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
 from app.models.contact import ContactInquiry
-from app.models.rewards import SpinReward
+from app.models.rewards_spin import SpinReward
+# from app.models.rewards_info import RewardInfo

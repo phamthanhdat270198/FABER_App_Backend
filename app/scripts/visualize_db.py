@@ -22,7 +22,7 @@ from app.models.type_detail import TypeDetail
 from app.models.token_store import TokenStore
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
-from app.models.rewards import SpinReward
+from app.models.rewards_spin import SpinReward
 
 
 from sqlalchemy.orm import joinedload
@@ -511,6 +511,7 @@ def show_all_rewards():
         db.close()
 
 if __name__ == "__main__":
+    from app.models.rewards_info import RewardInfo, RewardType
     try:
         # show_users()
         # show_orders()
@@ -524,6 +525,28 @@ if __name__ == "__main__":
         # show_product_thumbnail()
         # show_cart_database()
         show_all_rewards()
+        # db = SessionLocal()
+        # regular_rewards = db.query(RewardInfo.name).filter(
+        # RewardInfo.type == RewardType.REGULAR,
+        # RewardInfo.is_active == True
+        # ).all()
+        
+        # # Chuyển đổi kết quả từ danh sách tuple thành danh sách chuỗi
+        # regular_rewards_list = [reward[0] for reward in regular_rewards]
+        
+        # special_rewards_query = db.query(
+        # RewardInfo.special_spin_number, 
+        # RewardInfo.name
+        # ).filter(
+        #     RewardInfo.type == RewardType.SPECIAL,
+        #     RewardInfo.is_active == True,
+        #     RewardInfo.special_spin_number.isnot(None)
+        # ).all()
+        
+        # # Chuyển đổi kết quả thành dictionary
+        # special_rewards_dict = {int(spin_num): name for spin_num, name in special_rewards_query}
+        # print("regular_rewards == ", regular_rewards_list)
+        # print("special_rewards_query == ", special_rewards_dict)
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback
