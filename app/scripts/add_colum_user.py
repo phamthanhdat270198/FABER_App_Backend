@@ -327,9 +327,30 @@ def add_status_column():
         traceback.print_exc()
     finally:
         conn.close()
+def add_kth_spin_column():
+    # Kiểm tra xem file database có tồn tại không
+    if not os.path.exists(DATABASE_PATH):
+        print(f"Không tìm thấy database tại: {DATABASE_PATH}")
+        return
+    
+    # Kết nối với database
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("PRAGMA table_info(users)")
+    columns = cursor.fetchall()
+    column_names = [column[1] for column in columns]
+
+    if 'kth_spin' not in column_names:
+        # Thêm cột kth_spin vào bảng users với giá trị mặc định là 0
+        cursor.execute("ALTER TABLE users ADD COLUMN kth_spin INTEGER DEFAULT 0")
+        print("Đã thêm cột kth_spin vào bảng users")
+    else:
+        print("Cột kth_spin đã tồn tại trong bảng users")
 
 if __name__ == "__main__":
     # add_created_date_column()
     # add_admin_column()
     # add_password_field()
-    add_status_column()
+    # add_status_column()
+    add_kth_spin_column()

@@ -22,6 +22,7 @@ from app.models.type_detail import TypeDetail
 from app.models.token_store import TokenStore
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
+from app.models.rewards import SpinReward
 
 
 from sqlalchemy.orm import joinedload
@@ -39,7 +40,7 @@ def show_users():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "Họ Tên", "Số điện thoại", "Điểm thưởng", "Ngày tạo", "Quyền Admin", "Password hash", "Status", "Date of Birth", "Gender"]
+        headers = ["ID", "Họ Tên", "Số điện thoại", "Điểm thưởng", "Ngày tạo", "Quyền Admin", "Password hash", "Status", "Date of Birth", "Gender", "kth_spin"]
         rows = []
         
         for user in users:
@@ -59,7 +60,8 @@ def show_users():
                 user.hashed_password,
                 user.status,
                 user.date_of_birth,
-                user.gender
+                user.gender,
+                user.kth_spin
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng
@@ -471,6 +473,43 @@ def show_cart_database():
     finally:
         db.close()
 
+def show_all_rewards():
+    """Hiển thị tất cả phần quà trong database"""
+    db = SessionLocal()
+    try:
+        # Lấy tất cả phần quà từ database
+        rewards = db.query(SpinReward).all()
+        
+        if not rewards:
+            print("Không có dữ liệu phần quà trong database.")
+            return
+        
+        # Chuẩn bị dữ liệu cho bảng
+        headers = ["ID", "User ID", "Loại phần quà", "Đã nhận", "Lần quay thứ", "Ngày tạo", "Ngày nhận"]
+        rows = []
+        
+        for reward in rewards:
+            # Hiển thị trạng thái đã nhận như Đã nhận/Chưa nhận
+            claimed_status = "Đã nhận" if reward.is_claimed else "Chưa nhận"
+            
+            rows.append([
+                reward.id,
+                reward.user_id,
+                reward.reward_type,
+                claimed_status,
+                reward.spin_number,
+                reward.created_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(reward, 'created_at') and reward.created_at else "N/A",
+                reward.claimed_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(reward, 'claimed_at') and reward.claimed_at else "N/A"
+            ])
+        
+        # Hiển thị dữ liệu dưới dạng bảng
+        print("\n=== DANH SÁCH PHẦN QUÀ ===")
+        print(tabulate(rows, headers=headers, tablefmt="pretty"))
+        print(f"Tổng số phần quà: {len(rewards)}")
+        
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     try:
         # show_users()
@@ -483,7 +522,8 @@ if __name__ == "__main__":
         # show_token_store()
         # show_product_images()
         # show_product_thumbnail()
-        show_cart_database()
+        # show_cart_database()
+        show_all_rewards()
     except Exception as e:
         print(f"Lỗi: {e}")
         import traceback

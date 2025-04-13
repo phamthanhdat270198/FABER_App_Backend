@@ -24,10 +24,9 @@ class User(Base):
     status = Column(Enum(UserStatus), default=UserStatus.PENDING, nullable=False)
     date_of_birth = Column(Date, nullable=True)
     gender = Column(String, nullable=True)
-
+    kth_spin = Column(Integer, default=0)
     
     # Relationship với Order - sử dụng string để tránh circular import
-    # orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     tokens = relationship("TokenStore", back_populates="user", cascade="all, delete-orphan")
     carts = relationship("Cart", back_populates="user", cascade="all, delete-orphan" )
 

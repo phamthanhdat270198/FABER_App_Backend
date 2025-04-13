@@ -74,7 +74,8 @@ class UserStatusInfo(BaseModel):
     so_dien_thoai: str
     status: UserStatusEnum
     class Config:
-            orm_mode = True
+        orm_mode = True
+
 # Schema cho cập nhật profile
 class UserProfileUpdate(BaseModel):
     ho_ten: Optional[str] = None
@@ -94,3 +95,18 @@ class UserProfileUpdate(BaseModel):
     
     class Config:
         orm_mode = True
+
+class SpinInfoResponse(BaseModel):
+    id: int
+    nums_spin: int
+    kth_spin: int
+
+    class Config:
+        orm_mode = True
+
+class UseSpinResponse(BaseModel):
+    success: bool
+    new_kth_spin: int
+    remaining_spins: int
+    message: str
+    reward_type: str
