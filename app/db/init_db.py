@@ -1046,7 +1046,7 @@ if __name__ == "__main__":
         # clear_existing_thumbnails()
         # seed_thumbnails()
         # seed_product_images()
-        seed_type_detail()
+        # seed_type_detail()
         # seed_order_detail()
         # seed_token_store()
         # seed_rewards()
