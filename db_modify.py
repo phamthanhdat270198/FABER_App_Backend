@@ -641,7 +641,7 @@ def clear_type_details_with_sqlite(db_path="app.db"):
             pass
         return False
 
-def delete_table(db_path="app.db", table_name="type_details"):
+def delet_type_detail(db_path="app.db", table_name="type_details"):
     """Delete a table from the SQLite database"""
     try:
         conn = sqlite3.connect(db_path)
@@ -697,5 +697,5 @@ if __name__ == "__main__":
     # clear_paint_types(db_path)
     # seed_paint_types1(db_path)
     # clear_type_details_with_sqlite(db_path)
-    # delete_table(db_path)
-    drop_rewards_table(db_path)
+    delet_type_detail(db_path)
+    # drop_rewards_table(db_path)

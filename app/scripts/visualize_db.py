@@ -163,7 +163,7 @@ def show_type_details():
             return
         
         # Chuẩn bị dữ liệu cho bảng
-        headers = ["ID", "ID PT", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi" ,"is active", "Tính năng"]
+        headers = ["ID", "ID PT", "Loại Sơn", "Sản Phẩm", "Mã", "Đóng Gói", "Thể tích", "Giá", "Phủ (m²)", "Khuyến Mãi" ,"is active", "Tính năng", "bonus points"]
         rows = []
         
         for detail in type_details:
@@ -179,7 +179,8 @@ def show_type_details():
                 f"{detail.m2_cover:.1f}" if detail.m2_cover else "N/A",
                 detail.promotion or "Không có",
                 detail.is_active,
-                detail.features
+                detail.features,
+                detail.bonus_points
             ])
         
         # Hiển thị dữ liệu dưới dạng bảng
@@ -517,14 +518,14 @@ if __name__ == "__main__":
         # show_orders()
         # show_paint_types()
         # show_image_resources()
-        # show_type_details()
+        show_type_details()
         
         # show_order_details()
         # show_token_store()
         # show_product_images()
         # show_product_thumbnail()
         # show_cart_database()
-        show_all_rewards()
+        # show_all_rewards()
         # db = SessionLocal()
         # regular_rewards = db.query(RewardInfo.name).filter(
         # RewardInfo.type == RewardType.REGULAR,

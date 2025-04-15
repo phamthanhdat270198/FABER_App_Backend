@@ -17,6 +17,7 @@ class TypeDetail(Base):
     promotion = Column(String, nullable=True)
     vname = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    bonus_points = Column(Integer, default=0)
 
     features = Column(String, nullable=True)
     # Relationship với PaintType

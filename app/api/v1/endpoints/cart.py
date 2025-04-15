@@ -134,7 +134,7 @@ def get_cart_items(
             product=type_detail.product,
             price=type_detail.price or 0, 
             thumbnail=thumbnail_path,
-            reward=item.quantity * REWARD,
+            reward=item.quantity * type_detail.bonus_points,
             code=type_detail.code
             
         ))
@@ -276,6 +276,7 @@ def place_order(
 
     # Tính tổng số tiền và điểm thưởng
     total_amount = 0
+    total_points = 0
     items_count = len(cart_items)
     
     # Chuyển trạng thái từng mặt hàng sang False
@@ -284,16 +285,18 @@ def place_order(
         type_detail = db.query(TypeDetail).filter(TypeDetail.id == item.type_detail_id).first()
         price = type_detail.price * item.quantity if type_detail.price else 0
         total_amount += price
-        
+        total_points += type_detail.bonus_points
         # Cập nhật trạng thái
         item.is_active = False
         item.modified_at = datetime.utcnow()
-    
+    #fb 01 32 23 505 +2
+    #fb 102 33, 350, 365, 25, 536, 845 + 7/ thung va 2d / lon 5l
+    # fb 381, 545, m11, m35, ac500, pu100 +10/thung va +3/lon
+    # fb m12, m38 +15/thung va 3d/lon 5l
     # Tính điểm thưởng (ví dụ: 1% tổng giá trị đơn hàng)
-    reward_points = total_amount * REWARD
     
     # Cộng điểm thưởng cho người dùng
-    current_user.diem_thuong += reward_points
+    current_user.diem_thuong += total_points
     
     # Lưu các thay đổi vào database
     db.commit()
@@ -302,6 +305,6 @@ def place_order(
         message="Đặt hàng thành công",
         items_count=items_count,
         total_amount=total_amount,
-        reward_points_earned=reward_points,
+        reward_points_earned=total_points,
         total_reward_points=current_user.diem_thuong
     )
