@@ -111,6 +111,7 @@ class SpinInfoResponse(BaseModel):
         orm_mode = True
 
 class UseSpinResponse(BaseModel):
+    id: int
     success: bool
     new_kth_spin: int
     remaining_spins: int
@@ -119,6 +120,7 @@ class UseSpinResponse(BaseModel):
     reward_img: Optional[str]
 
 class RewardBase(BaseModel):
+    id: int
     name: str
     type: RewardType
 

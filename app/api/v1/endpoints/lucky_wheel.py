@@ -110,6 +110,7 @@ def use_spin(current_user: User = Depends(get_current_user)
     remaining_spins = int(user.diem_thuong // POINTS_PER_SPIN)
     
     return UseSpinResponse(
+            id = reward_info.id,
             success=True,
             new_kth_spin=current_spin,
             remaining_spins=remaining_spins,
