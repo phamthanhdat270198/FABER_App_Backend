@@ -9,6 +9,7 @@ import enum
 class UserStatus(str, enum.Enum):
     PENDING = "PENDING"
     ACCEPTED = "ACCEPTED"
+    DECLINE = "DECLINE"
 
 class User(Base):
     __tablename__ = "users"

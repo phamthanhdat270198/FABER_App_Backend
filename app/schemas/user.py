@@ -7,6 +7,7 @@ from enum import Enum
 class UserStatusEnum(str, Enum):
     PENDING = "PENDING"
     ACCEPTED = "ACCEPTED"
+    DECLINE = "DECLINE"
 
 class UserGender(str, Enum):
     MALE = "male"
@@ -79,6 +80,7 @@ class UserStatusInfo(BaseModel):
     ho_ten: str
     so_dien_thoai: str
     status: UserStatusEnum
+    ngay_tao: datetime
     class Config:
         orm_mode = True
 

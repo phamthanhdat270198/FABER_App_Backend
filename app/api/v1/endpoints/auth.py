@@ -156,6 +156,24 @@ def get_pending_registrations(
     
     return accepted_users
 
+@router.get("/decline-registration", response_model=List[UserStatusInfo])
+def get_pending_registrations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Lấy danh sách yêu cầu đăng ký đang chờ xác nhận
+    Chỉ admin mới có quyền truy cập
+    """
+    accepted_users = (
+        db.query(User)
+        .filter(User.status == UserStatus.DECLINE)
+        .order_by(User.ngay_tao.desc())
+        .all()
+    )
+    
+    return accepted_users
+
 
 @router.post("/approve-registration/{user_id}", response_model=UserBasicInfo)
 def approve_registration(
@@ -182,6 +200,35 @@ def approve_registration(
     
     # Cập nhật trạng thái thành ACCEPTED
     user_update = UserUpdate(status=UserStatusEnum.ACCEPTED)
+    updated_user = update(db, db_obj=user, obj_in=user_update)
+    
+    return updated_user
+
+@router.post("/decline-registration/{user_id}", response_model=UserBasicInfo)
+def approve_registration(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Phê duyệt yêu cầu đăng ký
+    Chỉ admin mới có quyền thực hiện
+    """
+    user = get(db, id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy người dùng",
+        )
+    
+    if user.status == UserStatus.ACCEPTED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Người dùng này đã được phê duyệt trước đó",
+        )
+    
+    # Cập nhật trạng thái thành ACCEPTED
+    user_update = UserUpdate(status=UserStatusEnum.DECLINE)
     updated_user = update(db, db_obj=user, obj_in=user_update)
     
     return updated_user
