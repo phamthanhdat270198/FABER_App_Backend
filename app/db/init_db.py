@@ -29,6 +29,7 @@ from app.models.thumbnail import Thumbnail
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
 from app.models.rewards_info import RewardInfo, RewardType
+from app.models.banner_promotion import BannerPromote
 import shutil
 from pathlib import Path
 from alembic import op
@@ -958,6 +959,43 @@ def seed_thumbnails():
     finally:
         db.close()
 
+def clear_existing_promote_imgs():
+    db = SessionLocal()
+    """Clear all existing Thumbnail records from the database."""
+    try:
+        # Count existing thumbnails
+        thumbnail_count = db.query(BannerPromote).count()
+        print(f"Deleting {thumbnail_count} existing BannerPromote records...")
+        
+        # Delete all thumbnails
+        db.query(BannerPromote).delete()
+        db.commit()
+        print(f"Successfully deleted all existing BannerPromote records.")
+    except Exception as e:
+        db.rollback()
+        print(f"Error clearing existing BannerPromote: {str(e)}")
+        raise
+
+def seed_promote_imgs():
+    db = SessionLocal()
+    existing_count = db.query(BannerPromote).count()
+    if existing_count > 0:
+        print(f"Đã có {existing_count} bản ghi trong database. Bỏ qua seed.")
+        return
+
+    current_file_path = os.path.abspath(__file__)
+    project_path = os.path.dirname(os.path.dirname(current_file_path))
+    image_paths = os.path.dirname(os.path.dirname(project_path))
+    folder_path = os.path.join(image_paths, "faber_promote_imgs")
+    for img in os.listdir(folder_path):
+        banner_promote = BannerPromote(path_to_promote_imgs=os.path.join("faber_promote_imgs", img))
+        db.add(banner_promote)
+        print(f"Đã thêm: {img}")
+
+    db.commit()
+    print("Seed data thành công!")
+
+
 def seed_rewards():
     db = SessionLocal()
     # Xóa dữ liệu cũ (tùy chọn)
@@ -1050,6 +1088,8 @@ if __name__ == "__main__":
         # seed_order_detail()
         # seed_token_store()
         # seed_rewards()
+        clear_existing_promote_imgs()
+        seed_promote_imgs()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")

@@ -7,9 +7,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.crud.crud_user import authenticate, get_by_phone, create, is_admin, get, update
-from app.api.deps import get_db
 from app.api.deps import get_db, get_current_user, get_current_admin_user
-from app.core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from app.schemas.token import Token
 from app.schemas.auth import Login, UserAuth
 from app.schemas.user import UserResponse, UserCreate, UserBasicInfo, UserUpdate, UserStatusEnum, UserStatusInfo
@@ -28,20 +27,20 @@ def get_date_time():
 
 @router.post("/login", response_model=Token)
 def login_access_token(
-    db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
+    login_data: Login,
+    db: Session = Depends(get_db)
 ) -> Any:
     """
-    OAuth2 compatible token login, lấy access token cho future requests
-    Sử dụng số điện thoại như username
+    Đăng nhập và trả về access token + refresh token
+    Hỗ trợ tính năng remember me
     """
     user = authenticate(
-        db, so_dien_thoai=form_data.username, password=form_data.password
+        db, so_dien_thoai=login_data.so_dien_thoai, password=login_data.password
     )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Số điện thoại hoặc mật khẩu không chính xác",
-            headers={"WWW-Authenticate": "Bearer"},
         )
     
     # Kiểm tra xem tài khoản đã được chấp nhận chưa
@@ -51,13 +50,27 @@ def login_access_token(
             detail="Tài khoản đang chờ xác nhận từ admin",
         )
     
+    # Tạo access token JWT (ngắn hạn)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    return {
-        "access_token": create_access_token(
-            user.id, expires_delta=access_token_expires
-        ),
+    access_token = create_access_token(
+        user.id, expires_delta=access_token_expires
+    )
+    
+    refresh_token = crud_token_store.create_token_no_remember(
+        db=db, 
+        user_id=user.id, 
+        expires_days=5,
+    )
+    
+    # Trả về cả access token và refresh token
+    token_response = {
+        "access_token": access_token,
         "token_type": "bearer",
+        "refresh_token": refresh_token.token,
+        "expires_at": refresh_token.expires_at
     }
+    
+    return token_response
 
 @router.post("/login/json", response_model=Token)
 def login_access_token_json(
@@ -236,7 +249,6 @@ def approve_registration(
 @router.post("/login/remember", response_model=Token)
 def login_remember_me(
     login_data: Login,
-    user_agent: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ) -> Any:
     """
@@ -266,17 +278,22 @@ def login_remember_me(
     )
     
     # Tạo remember token dài hạn (30 ngày)
-    remember_token = crud_token_store.create_token(
+    # remember_token = crud_token_store.create_token(
+    #     db=db, 
+    #     user_id=user.id, 
+    #     expires_days=30,
+    # )
+    remember_token = crud_token_store.create_token_no_remember(
         db=db, 
         user_id=user.id, 
-        expires_days=30,
-        device_info=user_agent
+        expires_days=5,
     )
-    
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "remember_token": remember_token.token
+        "refresh_token": remember_token.token,
+        "expires_at": remember_token.expires_at
     }
 
 

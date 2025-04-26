@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from app.models.token_store import TokenStore
 from app.schemas.token_store import TokenStoreCreate
 
+
+
 def create_token(db: Session, user_id: int, expires_days: int = 30, device_info: Optional[str] = None) -> TokenStore:
     """
     Tạo token mới cho người dùng
@@ -15,6 +17,26 @@ def create_token(db: Session, user_id: int, expires_days: int = 30, device_info:
     
     # Tạo bản ghi TokenStore
     db_token = TokenStore.create_for_user(
+        user_id=user_id,
+        token=token,
+        expires_days=expires_days,
+        device_info=device_info
+    )
+    
+    db.add(db_token)
+    db.commit()
+    db.refresh(db_token)
+    return db_token
+
+def create_token_no_remember(db: Session, user_id: int, expires_days: int = 60*24, device_info: Optional[str] = None) -> TokenStore:
+    """
+    Tạo token mới cho người dùng
+    """
+    # Tạo token ngẫu nhiên
+    token = secrets.token_hex(32)  # 64 ký tự hex
+    
+    # Tạo bản ghi TokenStore
+    db_token = TokenStore.create_for_user_no_remember(
         user_id=user_id,
         token=token,
         expires_days=expires_days,

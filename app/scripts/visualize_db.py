@@ -518,10 +518,10 @@ if __name__ == "__main__":
         # show_orders()
         # show_paint_types()
         # show_image_resources()
-        show_type_details()
+        # show_type_details()
         
         # show_order_details()
-        # show_token_store()
+        show_token_store()
         # show_product_images()
         # show_product_thumbnail()
         # show_cart_database()

@@ -7,6 +7,7 @@ from app.api.v1.endpoints import paint_type_management
 from app.api.v1.endpoints import cart
 from app.api.v1.endpoints import contact
 from app.api.v1.endpoints import lucky_wheel
+from app.api.v1.endpoints import banner_promotion
 
 api_router = APIRouter()
 
@@ -20,3 +21,4 @@ api_router.include_router(paint_type_management.router, prefix="/paint-types", t
 api_router.include_router(cart.router, prefix="/cart", tags=["carts"])
 api_router.include_router(contact.router, prefix="/contact", tags=["contacts"])
 api_router.include_router(lucky_wheel.router, prefix="/lucky_wheel", tags=["lucky_wheel"])
+api_router.include_router(banner_promotion.router, prefix="/promotion", tags=["promotion_banner"])
