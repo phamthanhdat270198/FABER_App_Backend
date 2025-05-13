@@ -13,9 +13,11 @@ class SpinReward(Base):
     spin_number = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     claimed_at = Column(DateTime, nullable=True)
+    reward_img_url = Column(String, nullable=False)
     
     # Relationship với User
     user = relationship("User", back_populates="spin_reward")
+
     
     
     def __repr__(self):

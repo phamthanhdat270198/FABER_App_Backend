@@ -98,7 +98,8 @@ def use_spin(current_user: User = Depends(get_current_user)
     reward = SpinReward(
         user_id=user.id,
         reward_type=reward_type,
-        spin_number=current_spin
+        spin_number=current_spin, 
+        reward_img_url = reward_info.image_url
     )
     
     # Cập nhật database

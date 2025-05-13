@@ -143,6 +143,7 @@ class SpinRewardBase(BaseModel):
     spin_number: int
     created_at: datetime
     claimed_at: Optional[datetime] = None
+    reward_img_url: str
 
     class Config:
         orm_mode = True

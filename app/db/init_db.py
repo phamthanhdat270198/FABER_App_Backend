@@ -1088,8 +1088,8 @@ if __name__ == "__main__":
         # seed_order_detail()
         # seed_token_store()
         # seed_rewards()
-        clear_existing_promote_imgs()
-        seed_promote_imgs()
+        # clear_existing_promote_imgs()
+        # seed_promote_imgs()
         print("Khởi tạo database hoàn tất!")
     except Exception as e:
         print(f"Lỗi: {e}")
