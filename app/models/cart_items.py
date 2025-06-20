@@ -16,6 +16,7 @@ class CartItem(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     modified_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = Column(Boolean, default=True)
+    is_purchase = Column(Boolean, default=False, nullable=False)
 
     # Relationship với Cart
     cart = relationship("Cart", back_populates="cart_items")
@@ -24,4 +25,4 @@ class CartItem(Base):
     type_detail = relationship("TypeDetail", back_populates="cart_items")
 
     def __repr__(self):
-        return f"<CartItem(id={self.id}, cart_id={self.cart_id}, type_detail_id={self.type_detail_id}, color_code='{self.color_code}', volume={self.volume})>"
+        return f"<CartItem(id={self.id}, cart_id={self.cart_id}, type_detail_id={self.type_detail_id}, color_code='{self.color_code}', volume={self.volume}, is_purchase={self.is_purchase})>"
