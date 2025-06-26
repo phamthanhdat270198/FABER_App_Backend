@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Enum, Date
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from app.models.base import Base
 
@@ -19,13 +19,16 @@ class User(Base):
     dia_chi = Column(String, nullable=True)
     so_dien_thoai = Column(String, nullable=True)
     diem_thuong = Column(Float, default=0.0)
-    ngay_tao = Column(DateTime, default=datetime.utcnow, nullable=False)
+    ngay_tao = Column(DateTime, default=datetime.now(timezone(timedelta(hours=7))), nullable=False)
     admin = Column(Boolean, default=False, nullable=False)
     hashed_password = Column(String, nullable=True)
     status = Column(Enum(UserStatus), default=UserStatus.PENDING, nullable=False)
     date_of_birth = Column(Date, nullable=True)
     gender = Column(String, nullable=True)
     kth_spin = Column(Integer, default=0)
+
+    is_retail_customer = Column(Boolean, default=False, nullable=False)  
+    is_agent = Column(Boolean, default=False, nullable=False)            
     
     # Relationship với Order - sử dụng string để tránh circular import
     tokens = relationship("TokenStore", back_populates="user", cascade="all, delete-orphan")

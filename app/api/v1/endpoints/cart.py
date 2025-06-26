@@ -4,6 +4,7 @@ from typing import List
 from pydantic import BaseModel
 from datetime import datetime
 from sqlalchemy import and_
+from collections import defaultdict
 
 from app.models.cart import Cart
 from app.models.cart_items import CartItem
@@ -14,7 +15,7 @@ from app.schemas.cart_items import OrderCreate, OrderResponse, DeleteIDCart
 from app.models.user import User
 from app.db.base import get_db
 from app.api.deps import get_current_active_user
-from app.schemas.cart_items import CartItemCreate, CartItemResponse,CartItemThumbnailResponse, UnpaidOrderItemResponse, UnpaidOrderHistoryResponse, paidOrderItemResponse, PaidOrderHistoryResponse
+from app.schemas.cart_items import CartItemCreate, CartItemResponse,CartItemThumbnailResponse, UnpaidOrderItemResponse, UnpaidOrderHistoryResponse, paidOrderItemResponse, PaidOrderHistoryResponse, AdminGroupedUnpaidResponse, UnpaidOrderItemForAdmin, UserUnpaidGroup
 
 from app.api.deps import get_db, get_current_user, get_current_admin_user
 
@@ -450,6 +451,124 @@ def get_unpaid_order_history(
         orders=order_items
     )
 
+@router.get("/admin/all-unpaid-orders-by-user", response_model=AdminGroupedUnpaidResponse, status_code=status.HTTP_200_OK)
+def admin_get_unpaid_orders_by_user(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user)
+):
+    """
+    API admin lấy tất cả unpaid orders GROUP THEO USER
+    
+    Format: 
+    User A -> [list unpaid orders của user A]
+    User B -> [list unpaid orders của user B]
+    User C -> [list unpaid orders của user C]
+    ...
+    """
+    
+    # Query tất cả unpaid orders
+    unpaid_items = db.query(CartItem, TypeDetail, ImageResource, User).join(
+        Cart, CartItem.cart_id == Cart.id
+    ).join(
+        User, Cart.user_id == User.id
+    ).join(
+        TypeDetail, CartItem.type_detail_id == TypeDetail.id
+    ).outerjoin(
+        ImageResource, TypeDetail.id == ImageResource.type_detail_id
+    ).filter(
+        and_(
+            CartItem.is_active == False,    # Đã đặt hàng
+            CartItem.is_purchase == False,  # Chưa thanh toán
+            User.status == "ACCEPTED"  # User active
+        )
+    ).order_by(User.ho_ten, CartItem.modified_at.desc()).all()
+    
+    if not unpaid_items:
+        return AdminGroupedUnpaidResponse(
+            message="Không có đơn hàng chưa thanh toán nào trong hệ thống",
+            total_users_with_unpaid=0,
+            total_unpaid_items=0,
+            total_unpaid_amount=0.0,
+            users=[]
+        )
+    
+    # Group theo user_id
+    user_groups = defaultdict(list)
+    user_info = {}  # Cache user info
+    
+    for cart_item, type_detail, image_resource, user in unpaid_items:
+        # Cache user info
+        if user.id not in user_info:
+            user_info[user.id] = {
+                "user_id": user.id,
+                "user_name": user.ho_ten,
+                "user_phone": user.so_dien_thoai,
+                "user_address": user.dia_chi,
+                "is_retail_customer": user.is_retail_customer,
+                "is_agent": user.is_agent
+            }
+        
+        # Tính toán
+        unit_price = type_detail.price if type_detail.price else 0.0
+        total_price = unit_price * cart_item.quantity
+        days_pending = (datetime.now() - cart_item.modified_at).days
+        image_path = image_resource.image_path if image_resource else ""
+        
+        # Tạo order item
+        order_item = UnpaidOrderItemForAdmin(
+            cart_item_id=cart_item.id,
+            product=type_detail.product,
+            code=type_detail.code if type_detail.code else "N/A",
+            volume=cart_item.volume,
+            color_code=cart_item.color_code,
+            quantity=cart_item.quantity,
+            unit_price=unit_price,
+            total_price=total_price,
+            order_date=cart_item.modified_at,
+            days_pending=days_pending,
+            image_path=image_path
+        )
+        
+        # Group theo user
+        user_groups[user.id].append(order_item)
+    
+    # Tạo response
+    users_with_unpaid = []
+    total_unpaid_items = 0
+    total_unpaid_amount = 0.0
+    
+    for user_id, orders in user_groups.items():
+        user = user_info[user_id]
+        user_total_amount = sum(order.total_price for order in orders)
+        user_total_items = len(orders)
+        
+        total_unpaid_items += user_total_items
+        total_unpaid_amount += user_total_amount
+        
+        user_group = UserUnpaidGroup(
+            user_id=user["user_id"],
+            user_name=user["user_name"],
+            user_phone=user["user_phone"],
+            user_address=user["user_address"],
+            is_retail_customer=user["is_retail_customer"],
+            is_agent=user["is_agent"],
+            total_unpaid_items=user_total_items,
+            total_unpaid_amount=user_total_amount,
+            unpaid_orders=orders
+        )
+        users_with_unpaid.append(user_group)
+    
+    # Sort users theo tổng tiền giảm dần (user nợ nhiều nhất lên đầu)
+    users_with_unpaid.sort(key=lambda x: x.total_unpaid_amount, reverse=True)
+    
+    return AdminGroupedUnpaidResponse(
+        message=f"Lấy unpaid orders của {len(users_with_unpaid)} user thành công",
+        total_users_with_unpaid=len(users_with_unpaid),
+        total_unpaid_items=total_unpaid_items,
+        total_unpaid_amount=total_unpaid_amount,
+        users=users_with_unpaid
+    )
+
 # @router.patch("/admin/update-unpaid-order", response_model=AdminUpdateResponse)
 # def admin_update_unpaid_order(
 #     request: BatchUpdateRequest,
@@ -467,6 +586,7 @@ def get_unpaid_order_history(
     
 #     Sau đó tính lại điểm thưởng và cập nhật cho user
 #     """
+    
     
 #     if not request.updates:
 #         raise HTTPException(

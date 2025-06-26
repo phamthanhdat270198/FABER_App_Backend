@@ -10,8 +10,8 @@ from app.crud.crud_user import authenticate, get_by_phone, create, is_admin, get
 from app.api.deps import get_db, get_current_user, get_current_admin_user
 from app.core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from app.schemas.token import Token
-from app.schemas.auth import Login, UserAuth
-from app.schemas.user import UserResponse, UserCreate, UserBasicInfo, UserUpdate, UserStatusEnum, UserStatusInfo
+from app.schemas.auth import Login, UserAuth, UserAuthWithRole
+from app.schemas.user import UserResponse, UserCreate, UserCreateRegister, UserBasicInfo, UserUpdate, UserStatusEnum, UserStatusInfo
 from app.models.user import User, UserStatus
 from fastapi import Cookie, Header
 from app.crud import crud_token_store
@@ -59,7 +59,7 @@ def login_access_token(
     refresh_token = crud_token_store.create_token_no_remember(
         db=db, 
         user_id=user.id, 
-        expires_days=5,
+        expires_days=REFRESH_TOKEN_EXPIRE_DAYS,
     )
     
     # Trả về cả access token và refresh token
@@ -133,6 +133,41 @@ def create_registration_request(
     
     return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận"}
 
+@router.post("/register-request-specific", status_code=status.HTTP_201_CREATED)
+def create_registration_request_specific(
+    *,
+    db: Session = Depends(get_db),
+    user_in: UserAuthWithRole
+) -> Any:
+    """
+    Tạo yêu cầu đăng ký người dùng mới
+    """
+    user = get_by_phone(db, so_dien_thoai=user_in.so_dien_thoai)
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Số điện thoại này đã được đăng ký",
+        )
+    
+    if not user_in.is_retail_customer and not user_in.is_agent:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User phải thuộc ít nhất một loại: khách lẻ hoặc đại lý",
+        )
+
+    # Tạo người dùng mới với trạng thái PENDING
+    user_data = user_in.dict()
+    
+    user_create = UserCreateRegister(
+        **user_data,
+        admin=False,  # Người dùng mới không có quyền admin
+        status=UserStatusEnum.PENDING,  # Mặc định là đang chờ xác nhận
+        # ngay_tao=get_date_time()
+    )
+    user = create(db, obj_in=user_create)
+    
+    return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận",
+    "debug_time": user_create.ngay_tao.isoformat() }
 
 @router.get("/pending-registrations", response_model=List[UserStatusInfo])
 def get_pending_registrations(
@@ -278,16 +313,16 @@ def login_remember_me(
     )
     
     # Tạo remember token dài hạn (30 ngày)
-    # remember_token = crud_token_store.create_token(
-    #     db=db, 
-    #     user_id=user.id, 
-    #     expires_days=30,
-    # )
-    remember_token = crud_token_store.create_token_no_remember(
+    remember_token = crud_token_store.create_token(
         db=db, 
         user_id=user.id, 
-        expires_days=5,
+        expires_days=30,
     )
+    # remember_token = crud_token_store.create_token_no_remember(
+    #     db=db, 
+    #     user_id=user.id, 
+    #     expires_days=5,
+    # )
 
     return {
         "access_token": access_token,

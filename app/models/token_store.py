@@ -50,7 +50,7 @@ class TokenStore(Base):
     def create_for_user_no_remember(cls, user_id, token, expires_days=30, device_info=None):
         """Tạo token mới cho người dùng với thời hạn mặc định 30 ngày"""
 
-        expires_at = vietnam_time_now() + timedelta(minutes=expires_days)
+        expires_at = vietnam_time_now() + timedelta(days=expires_days)
         return cls(
             user_id=user_id,
             token=token,

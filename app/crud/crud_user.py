@@ -23,7 +23,9 @@ def create(db: Session, *, obj_in: UserCreate) -> User:
         diem_thuong=obj_in.diem_thuong,
         admin=obj_in.admin,
         status=obj_in.status,
-        hashed_password=get_password_hash(obj_in.password)
+        hashed_password=get_password_hash(obj_in.password),
+        is_agent=obj_in.is_agent,
+        is_retail_customer=obj_in.is_retail_customer
     )
     db.add(db_obj)
     db.commit()

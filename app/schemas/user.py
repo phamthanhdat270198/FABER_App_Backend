@@ -1,9 +1,13 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 from typing import Optional, List
-from datetime import datetime, date
+from datetime import datetime, timezone, timedelta, date
 from enum import Enum
 # from app.models.rewards_info import  RewardType
-
+# def get_date_time():
+#     utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
+#     # Chuyển sang giờ Việt Nam (UTC+7)
+#     vn_time = utc_now.astimezone(timezone(timedelta(hours=7)))
+#     return vn_time
 class UserStatusEnum(str, Enum):
     PENDING = "PENDING"
     ACCEPTED = "ACCEPTED"
@@ -31,6 +35,27 @@ class UserBase(BaseModel):
     ngay_tao: datetime
 
 class UserCreate(UserBase):
+    password: str
+
+#for new register
+
+class UserBaseRegister(BaseModel):
+    ho_ten: str
+    dia_chi: Optional[str] = None
+    so_dien_thoai: str
+    diem_thuong: float = 0.0
+    admin: bool = False
+    status: UserStatusEnum = UserStatusEnum.PENDING
+    date_of_birth: Optional[date] = None
+    gender: Optional[UserGender] = None
+    ngay_tao: datetime = Field(
+        default_factory=lambda: datetime.now(timezone(timedelta(hours=7)))
+    )
+    is_agent: bool = False
+    is_retail_customer: bool = False
+
+
+class UserCreateRegister(UserBaseRegister):
     password: str
 
 class UserUpdate(BaseModel):
