@@ -138,24 +138,24 @@ class BatchUpdateRequest(BaseModel):
     user_id: int  # ID của user sở hữu đơn hàng
     updates: List[UpdateCartItemRequest]
 
-# class UpdatedItemResponse(BaseModel):
-#     cart_item_id: int
-#     old_product: str
-#     new_product: str
-#     old_quantity: int
-#     new_quantity: int
-#     old_color_code: str
-#     new_color_code: str
-#     old_volume: float
-#     new_volume: float
-#     old_bonus_points: int
-#     new_bonus_points: int
-#     price_change: float
+class UpdatedItemResponse(BaseModel):
+    cart_item_id: int
+    old_product: str
+    new_product: str
+    old_quantity: int
+    new_quantity: int
+    old_color_code: str
+    new_color_code: str
+    old_volume: float
+    new_volume: float
+    old_bonus_points: int
+    new_bonus_points: int
+    price_change: float
 
-# class AdminUpdateResponse(BaseModel):
-#     message: str
-#     updated_items: List[UpdatedItemResponse]
-#     total_items_updated: int
-#     old_total_bonus_points: int
-#     new_total_bonus_points: int
-#     bonus_points_difference: int
+class AdminUpdateResponse(BaseModel):
+    message: str
+    updated_items: List[UpdatedItemResponse]
+    total_items_updated: int
+    old_total_bonus_points: int
+    new_total_bonus_points: int
+    # bonus_points_difference: int

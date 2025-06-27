@@ -11,11 +11,11 @@ from app.models.cart_items import CartItem
 from app.models.type_detail import TypeDetail
 from app.models.thumbnail import Thumbnail
 from app.models.image_resource import ImageResource
-from app.schemas.cart_items import OrderCreate, OrderResponse, DeleteIDCart
+from app.schemas.cart_items import OrderCreate, OrderResponse, DeleteIDCart, BatchUpdateRequest, UpdateCartItemRequest
 from app.models.user import User
 from app.db.base import get_db
 from app.api.deps import get_current_active_user
-from app.schemas.cart_items import CartItemCreate, CartItemResponse,CartItemThumbnailResponse, UnpaidOrderItemResponse, UnpaidOrderHistoryResponse, paidOrderItemResponse, PaidOrderHistoryResponse, AdminGroupedUnpaidResponse, UnpaidOrderItemForAdmin, UserUnpaidGroup
+from app.schemas.cart_items import CartItemCreate, CartItemResponse,CartItemThumbnailResponse, UnpaidOrderItemResponse, UnpaidOrderHistoryResponse, paidOrderItemResponse, PaidOrderHistoryResponse, AdminGroupedUnpaidResponse, UnpaidOrderItemForAdmin, UserUnpaidGroup,UpdatedItemResponse,  AdminUpdateResponse
 
 from app.api.deps import get_db, get_current_user, get_current_admin_user
 
@@ -569,217 +569,159 @@ def admin_get_unpaid_orders_by_user(
         users=users_with_unpaid
     )
 
-# @router.patch("/admin/update-unpaid-order", response_model=AdminUpdateResponse)
-# def admin_update_unpaid_order(
-#     request: BatchUpdateRequest,
-#     db: Session = Depends(get_db),
-#     current_admin: User = Depends(get_current_admin_user)  # Chỉ admin mới được dùng
-# ):
-#     """
-#     API cho admin cập nhật thông tin đơn hàng chưa thanh toán
+@router.patch("/admin/update-unpaid-order", response_model=AdminUpdateResponse)
+def admin_update_unpaid_order(
+    request: BatchUpdateRequest,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user)  # Chỉ admin mới được dùng
+):
+    """
+    API cho admin cập nhật thông tin đơn hàng chưa thanh toán
     
-#     Admin có thể sửa:
-#     - Tên sản phẩm (cập nhật trong TypeDetail)
-#     - Số lượng sản phẩm
-#     - Mã màu
-#     - Kích thước
+    Admin có thể sửa:
+    - Tên sản phẩm (cập nhật trong TypeDetail)
+    - Số lượng sản phẩm
+    - Mã màu
+    - Kích thước
     
-#     Sau đó tính lại điểm thưởng và cập nhật cho user
-#     """
+    Sau đó tính lại điểm thưởng và cập nhật cho user
+    """
     
     
-#     if not request.updates:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Danh sách cập nhật không được để trống"
-#         )
+    if not request.updates:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Danh sách cập nhật không được để trống"
+        )
     
-#     # Kiểm tra user tồn tại
-#     target_user = db.query(User).filter(User.id == request.user_id).first()
-#     if not target_user:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail=f"Không tìm thấy user với ID: {request.user_id}"
-#         )
+    # Kiểm tra user tồn tại
+    target_user = db.query(User).filter(User.id == request.user_id).first()
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Không tìm thấy user với ID: {request.user_id}"
+        )
     
-#     # Lấy danh sách cart_item_ids cần cập nhật
-#     cart_item_ids = [update.cart_item_id for update in request.updates]
+    # Lấy danh sách cart_item_ids cần cập nhật
+    cart_item_ids = [update.cart_item_id for update in request.updates]
     
-#     # Query các cart item chưa thanh toán của user
-#     cart_items_data = db.query(CartItem, TypeDetail).join(
-#         Cart, CartItem.cart_id == Cart.id
-#     ).join(
-#         TypeDetail, CartItem.type_detail_id == TypeDetail.id
-#     ).filter(
-#         and_(
-#             Cart.user_id == request.user_id,
-#             CartItem.id.in_(cart_item_ids),
-#             CartItem.is_active == False,  # Đã đặt hàng
-#             CartItem.is_purchase == False  # Chưa thanh toán
-#         )
-#     ).all()
+    # Query các cart item chưa thanh toán của user
+    cart_items_data = db.query(CartItem, TypeDetail).join(
+        Cart, CartItem.cart_id == Cart.id
+    ).join(
+        TypeDetail, CartItem.type_detail_id == TypeDetail.id
+    ).filter(
+        and_(
+            Cart.user_id == request.user_id,
+            CartItem.id.in_(cart_item_ids),
+            CartItem.is_active == False,  # Đã đặt hàng
+            CartItem.is_purchase == False  # Chưa thanh toán
+        )
+    ).all()
     
-#     if not cart_items_data:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="Không tìm thấy đơn hàng chưa thanh toán nào phù hợp"
-#         )
+    if not cart_items_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy đơn hàng chưa thanh toán nào phù hợp"
+        )
     
-#     # Tạo dict để tra cứu nhanh
-#     items_dict = {cart_item.id: (cart_item, type_detail) for cart_item, type_detail in cart_items_data}
+    # Tạo dict để tra cứu nhanh
+    items_dict = {cart_item.id: (cart_item, type_detail) for cart_item, type_detail in cart_items_data}
     
-#     # Kiểm tra tất cả cart_item_ids có tồn tại không
-#     found_ids = set(items_dict.keys())
-#     requested_ids = set(cart_item_ids)
-#     missing_ids = requested_ids - found_ids
+    # Kiểm tra tất cả cart_item_ids có tồn tại không
+    found_ids = set(items_dict.keys())
+    requested_ids = set(cart_item_ids)
+    missing_ids = requested_ids - found_ids
     
-#     if missing_ids:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Không tìm thấy cart item với ID: {list(missing_ids)}"
-#         )
+    if missing_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Không tìm thấy cart item với ID: {list(missing_ids)}"
+        )
     
-#     # Tính điểm thưởng cũ
-#     old_total_bonus_points = sum(
-#         (type_detail.bonus_points or 0) * cart_item.quantity 
-#         for cart_item, type_detail in cart_items_data
-#     )
+    # Tính điểm thưởng cũ
+    old_total_bonus_points = sum(
+        (type_detail.bonus_points or 0) * cart_item.quantity 
+        for cart_item, type_detail in cart_items_data
+    )
     
-#     updated_items = []
+    updated_items = []
     
-#     # Xử lý từng cập nhật
-#     for update_request in request.updates:
-#         cart_item, type_detail = items_dict[update_request.cart_item_id]
+    # Xử lý từng cập nhật
+    for update_request in request.updates:
+        cart_item, type_detail = items_dict[update_request.cart_item_id]
         
-#         # Lưu giá trị cũ
-#         old_product = type_detail.product
-#         old_quantity = cart_item.quantity
-#         old_color_code = cart_item.color_code
-#         old_volume = cart_item.volume
-#         old_bonus_points = (type_detail.bonus_points or 0) * cart_item.quantity
+        # Lưu giá trị cũ
+        old_product = type_detail.product
+        old_quantity = cart_item.quantity
+        old_color_code = cart_item.color_code
+        old_volume = cart_item.volume
+        old_bonus_points = (type_detail.bonus_points or 0) * cart_item.quantity
         
-#         # Cập nhật TypeDetail (tên sản phẩm)
-#         if update_request.product_name is not None:
-#             type_detail.product = update_request.product_name
+        # Cập nhật TypeDetail (tên sản phẩm)
+        if update_request.product_name is not None:
+            type_detail.product = update_request.product_name
         
-#         # Cập nhật CartItem
-#         if update_request.quantity is not None:
-#             cart_item.quantity = update_request.quantity
+        # Cập nhật CartItem
+        if update_request.quantity is not None:
+            cart_item.quantity = update_request.quantity
             
-#         if update_request.color_code is not None:
-#             cart_item.color_code = update_request.color_code
+        if update_request.color_code is not None:
+            cart_item.color_code = update_request.color_code
             
-#         if update_request.volume is not None:
-#             cart_item.volume = update_request.volume
+        if update_request.volume is not None:
+            cart_item.volume = update_request.volume
         
-#         # Cập nhật modified_at
-#         cart_item.modified_at = datetime.utcnow()
-        
-#         # Tính điểm thưởng mới
-#         new_bonus_points = (type_detail.bonus_points or 0) * cart_item.quantity
-        
-#         # Tính thay đổi giá (nếu có)
-#         old_price = (type_detail.price or 0) * old_quantity
-#         new_price = (type_detail.price or 0) * cart_item.quantity
-#         price_change = new_price - old_price
-        
-#         # Thêm vào danh sách response
-#         updated_items.append(UpdatedItemResponse(
-#             cart_item_id=cart_item.id,
-#             old_product=old_product,
-#             new_product=type_detail.product,
-#             old_quantity=old_quantity,
-#             new_quantity=cart_item.quantity,
-#             old_color_code=old_color_code,
-#             new_color_code=cart_item.color_code,
-#             old_volume=old_volume,
-#             new_volume=cart_item.volume,
-#             old_bonus_points=old_bonus_points,
-#             new_bonus_points=new_bonus_points,
-#             price_change=price_change
-#         ))
-    
-#     # Tính lại tổng điểm thưởng mới
-#     new_total_bonus_points = sum(
-#         (type_detail.bonus_points or 0) * cart_item.quantity 
-#         for cart_item, type_detail in cart_items_data
-#     )
-    
-#     # Cập nhật điểm thưởng cho user
-#     bonus_points_difference = new_total_bonus_points - old_total_bonus_points
-#     if hasattr(target_user, 'diem_thuong'):
-#         target_user.diem_thuong = (target_user.diem_thuong or 0) + bonus_points_difference
-    
-#     # Lưu tất cả thay đổi
-#     db.commit()
-    
-#     return AdminUpdateResponse(
-#         message="Cập nhật đơn hàng thành công",
-#         updated_items=updated_items,
-#         total_items_updated=len(updated_items),
-#         old_total_bonus_points=old_total_bonus_points,
-#         new_total_bonus_points=new_total_bonus_points,
-#         bonus_points_difference=bonus_points_difference
-#     )
+        # Cập nhật modified_at
+        cart_item.modified_at = datetime.utcnow()
 
-# @router.get("/admin/unpaid-orders/{user_id}")
-# def admin_get_user_unpaid_orders(
-#     user_id: int,
-#     db: Session = Depends(get_db),
-#     current_admin: User = Depends(get_current_admin_user)
-# ):
-#     """
-#     API cho admin xem đơn hàng chưa thanh toán của một user cụ thể
-#     """
+        cart_item.is_purchase = True
+        
+        # Tính điểm thưởng mới
+        new_bonus_points = (type_detail.bonus_points or 0) * cart_item.quantity
+        
+        # Tính thay đổi giá (nếu có)
+        old_price = (type_detail.price or 0) * old_quantity
+        new_price = (type_detail.price or 0) * cart_item.quantity
+        price_change = new_price - old_price
+        
+        # Thêm vào danh sách response
+        updated_items.append(UpdatedItemResponse(
+            cart_item_id=cart_item.id,
+            old_product=old_product,
+            new_product=type_detail.product,
+            old_quantity=old_quantity,
+            new_quantity=cart_item.quantity,
+            old_color_code=old_color_code,
+            new_color_code=cart_item.color_code,
+            old_volume=old_volume,
+            new_volume=cart_item.volume,
+            old_bonus_points=old_bonus_points,
+            new_bonus_points=new_bonus_points,
+            price_change=price_change
+        ))
     
-#     # Kiểm tra user tồn tại
-#     target_user = db.query(User).filter(User.id == user_id).first()
-#     if not target_user:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail=f"Không tìm thấy user với ID: {user_id}"
-#         )
+    # Tính lại tổng điểm thưởng mới
+    new_total_bonus_points = sum(
+        (type_detail.bonus_points or 0) * cart_item.quantity 
+        for cart_item, type_detail in cart_items_data
+    )
     
-#     # Query đơn hàng chưa thanh toán
-#     unpaid_items = db.query(CartItem, TypeDetail).join(
-#         Cart, CartItem.cart_id == Cart.id
-#     ).join(
-#         TypeDetail, CartItem.type_detail_id == TypeDetail.id
-#     ).filter(
-#         and_(
-#             Cart.user_id == user_id,
-#             CartItem.is_active == False,  # Đã đặt hàng
-#             CartItem.is_purchase == False  # Chưa thanh toán
-#         )
-#     ).order_by(CartItem.modified_at.desc()).all()
+    # Cập nhật điểm thưởng cho user
+    # bonus_points_difference = new_total_bonus_points - old_total_bonus_points
+    if hasattr(target_user, 'diem_thuong'):
+        # target_user.diem_thuong = (target_user.diem_thuong or 0) + bonus_points_difference
+        target_user.diem_thuong += new_total_bonus_points
+
+    # Lưu tất cả thay đổi
+    db.commit()
     
-#     if not unpaid_items:
-#         return {
-#             "message": f"User {target_user.username if hasattr(target_user, 'username') else user_id} không có đơn hàng chưa thanh toán",
-#             "user_id": user_id,
-#             "orders": []
-#         }
-    
-#     # Format response
-#     orders = []
-#     for cart_item, type_detail in unpaid_items:
-#         orders.append({
-#             "cart_item_id": cart_item.id,
-#             "product": type_detail.product,
-#             "code": type_detail.code,
-#             "quantity": cart_item.quantity,
-#             "color_code": cart_item.color_code,
-#             "volume": cart_item.volume,
-#             "price": type_detail.price,
-#             "bonus_points": type_detail.bonus_points,
-#             "order_date": cart_item.modified_at,
-#             "total_price": (type_detail.price or 0) * cart_item.quantity,
-#             "total_bonus_points": (type_detail.bonus_points or 0) * cart_item.quantity
-#         })
-    
-#     return {
-#         "message": "Lấy danh sách đơn hàng thành công",
-#         "user_id": user_id,
-#         "total_items": len(orders),
-#         "orders": orders
-#     }
+    return AdminUpdateResponse(
+        message="Cập nhật đơn hàng thành công",
+        updated_items=updated_items,
+        total_items_updated=len(updated_items),
+        old_total_bonus_points=old_total_bonus_points,
+        new_total_bonus_points=new_total_bonus_points,
+        # bonus_points_difference=bonus_points_difference
+    )
+
