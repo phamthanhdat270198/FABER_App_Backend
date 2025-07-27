@@ -679,6 +679,112 @@ def drop_rewards_table(db_path='app.db'):  # Thay đổi đường dẫn tới f
     except Exception as e:
         print(f"Lỗi khi xóa bảng rewards: {str(e)}")
 
+
+def update_type_detail_product(new_product_name, target_id=1, db_path="app.db"):
+    """
+    Cập nhật giá trị product cho bản ghi TypeDetail với ID cụ thể
+    
+    Args:
+        new_product_name (str): Tên sản phẩm mới
+        target_id (int): ID của bản ghi cần cập nhật (mặc định là 1)
+        db_path (str): Đường dẫn đến file cơ sở dữ liệu SQLite
+    
+    Returns:
+        bool: True nếu cập nhật thành công, False nếu thất bại
+    """
+    # Kiểm tra file database có tồn tại không
+    if not os.path.exists(db_path):
+        print(f"Lỗi: Database không tồn tại tại đường dẫn: {db_path}")
+        return False
+    
+    # Kiểm tra tên sản phẩm mới có hợp lệ không
+    if not new_product_name or not new_product_name.strip():
+        print("Lỗi: Tên sản phẩm mới không được để trống.")
+        return False
+        
+    try:
+        # Kết nối tới database
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Kiểm tra bản ghi có tồn tại không
+        cursor.execute("SELECT id, product FROM type_details WHERE id = ?;", (target_id,))
+        existing_record = cursor.fetchone()
+        
+        if not existing_record:
+            print(f"Không tìm thấy bản ghi TypeDetail với ID = {target_id}")
+            conn.close()
+            return False
+            
+        # Hiển thị thông tin hiện tại
+        current_product = existing_record[1]
+        print(f"\n=== THÔNG TIN HIỆN TẠI ===")
+        print(f"ID: {target_id}")
+        print(f"Product hiện tại: '{current_product}'")
+        print(f"Product mới: '{new_product_name.strip()}'")
+        
+        # Kiểm tra xem có thay đổi gì không
+        if current_product == new_product_name.strip():
+            print("Giá trị mới giống với giá trị hiện tại. Không cần cập nhật.")
+            conn.close()
+            return True
+            
+        # Xác nhận từ người dùng
+        confirm = input(f"\nBạn có chắc chắn muốn cập nhật product cho TypeDetail ID={target_id}? (y/n): ")
+        if confirm.lower() != 'y':
+            print("Đã hủy thao tác cập nhật.")
+            conn.close()
+            return False
+            
+        # Bắt đầu transaction
+        conn.execute("BEGIN TRANSACTION;")
+        
+        # Thực hiện cập nhật
+        cursor.execute(
+            "UPDATE type_details SET product = ? WHERE id = ?;", 
+            (new_product_name.strip(), target_id)
+        )
+        
+        # Kiểm tra số bản ghi đã được cập nhật
+        if cursor.rowcount == 0:
+            print(f"Không có bản ghi nào được cập nhật với ID = {target_id}")
+            conn.rollback()
+            conn.close()
+            return False
+            
+        # Commit transaction
+        conn.commit()
+        
+        # Xác nhận cập nhật thành công
+        cursor.execute("SELECT id, product FROM type_details WHERE id = ?;", (target_id,))
+        updated_record = cursor.fetchone()
+        
+        print(f"\n=== THÔNG TIN SAU KHI CẬP NHẬT ===")
+        print(f"ID: {updated_record[0]}")
+        print(f"Product đã cập nhật: '{updated_record[1]}'")
+        print(f"\nĐã cập nhật thành công product cho TypeDetail ID={target_id}")
+        
+        # Đóng kết nối
+        conn.close()
+        return True
+        
+    except sqlite3.Error as e:
+        print(f"Lỗi SQLite: {e}")
+        try:
+            conn.rollback()
+            conn.close()
+        except:
+            pass
+        return False
+    except Exception as e:
+        print(f"Lỗi: {e}")
+        try:
+            conn.rollback()
+            conn.close()
+        except:
+            pass
+        return False
+
 if __name__ == "__main__":
     # Lấy đường dẫn đến database từ tham số dòng lệnh hoặc sử dụng giá trị mặc định
     if len(sys.argv) > 1:
@@ -697,5 +803,6 @@ if __name__ == "__main__":
     # clear_paint_types(db_path)
     # seed_paint_types1(db_path)
     # clear_type_details_with_sqlite(db_path)
-    delet_type_detail(db_path)
+    # delet_type_detail(db_path)
     # drop_rewards_table(db_path)
+    update_type_detail_product("CLASSIC", db_path=db_path)
