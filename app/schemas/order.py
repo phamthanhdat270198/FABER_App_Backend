@@ -12,7 +12,7 @@ class OrderStatusEnum(str, Enum):
 class OrderBase(BaseModel):
     user_id: int
     status: OrderStatusEnum = OrderStatusEnum.PENDING
-    
+
 # Schema cho tạo Order mới
 class OrderCreate(OrderBase):
     pass
@@ -27,13 +27,13 @@ class OrderResponse(OrderBase):
     id: int
     date_time: datetime
     is_deleted: bool
-    
+
     class Config:
         orm_mode = True
-        
+
 # Schema cho hiển thị Order với thông tin User
 class OrderWithUser(OrderResponse):
     user_ho_ten: str
-    
+
     class Config:
         orm_mode = True

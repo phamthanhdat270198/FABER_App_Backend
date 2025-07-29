@@ -36,6 +36,9 @@ from alembic import op
 from app.core.security import get_password_hash
 
 def get_date_time():
+    """
+    Lấy thời gian hiện tại theo múi giờ Việt Nam.
+    """
     utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
 
     # Chuyển sang giờ Việt Nam (UTC+7)
@@ -48,11 +51,17 @@ def get_date_time():
 
 
 def init_db():
+    """
+    Tạo tất cả các bảng trong database.
+    """
     # Tạo tất cả các bảng trong database
     Base.metadata.create_all(bind=engine)
     print("Đã tạo các bảng thành công")
 
 def seed_data():
+    """
+    Thêm dữ liệu mẫu cho bảng users nếu chưa có.
+    """
     # Tạo session mới
     db = SessionLocal()
     try:
@@ -96,6 +105,9 @@ def seed_data():
         db.close()
 
 def seed_paint_type():
+    """
+    Cập nhật thông tin mô tả cho các loại sơn.
+    """
     db = SessionLocal()
     try:
         paint_types = db.query(PaintType).all()
@@ -154,7 +166,7 @@ def seed_paint_type():
     
 def seed_image():
     """
-    Seed images from faber_imgs folder into the database.
+    Seed images từ thư mục faber_imgs vào database.
     
     Folder structure:
     faber_imgs/
@@ -276,8 +288,10 @@ def seed_image():
         db.close()
 
 def clear_existing_images():
+    """
+    Xóa toàn bộ ImageResource trong database.
+    """
     db = SessionLocal()
-    """Clear all existing ImageResource records from the database."""
     try:
         # Count existing images
         image_count = db.query(ImageResource).count()
@@ -293,6 +307,9 @@ def clear_existing_images():
         raise
 
 def seed_type_detail():
+    """
+    Thêm dữ liệu mẫu cho type_details nếu chưa có.
+    """
     db = SessionLocal()
     try:
         # Thêm dữ liệu mẫu cho type_details
@@ -717,6 +734,9 @@ def seed_type_detail():
         db.close()
 
 def seed_token_store():
+    """
+    Thêm dữ liệu mẫu cho token_store, có xác nhận nếu đã có dữ liệu.
+    """
     db = SessionLocal()
     try:
         # Kiểm tra xem đã có dữ liệu trong bảng token_store chưa
@@ -817,6 +837,9 @@ def seed_token_store():
         db.close()
 
 def clear_existing_thumbnails():
+    """
+    Xóa toàn bộ Thumbnail trong database.
+    """
     db = SessionLocal()
     """Clear all existing Thumbnail records from the database."""
     try:
@@ -835,7 +858,7 @@ def clear_existing_thumbnails():
 
 def seed_thumbnails():
     """
-    Seed thumbnails from faber_thumbs folder into the database.
+    Seed thumbnails từ thư mục faber_thumbs vào database.
     First clears all existing Thumbnail records, then adds new ones.
     
     Folder structure:
@@ -960,6 +983,9 @@ def seed_thumbnails():
         db.close()
 
 def clear_existing_promote_imgs():
+    """
+    Xóa toàn bộ BannerPromote trong database.
+    """
     db = SessionLocal()
     """Clear all existing Thumbnail records from the database."""
     try:
@@ -977,6 +1003,9 @@ def clear_existing_promote_imgs():
         raise
 
 def seed_promote_imgs():
+    """
+    Seed ảnh quảng cáo từ thư mục faber_promote_imgs vào database.
+    """
     db = SessionLocal()
     existing_count = db.query(BannerPromote).count()
     if existing_count > 0:
@@ -997,6 +1026,9 @@ def seed_promote_imgs():
 
 
 def seed_rewards():
+    """
+    Seed phần thưởng vào database.
+    """
     db = SessionLocal()
     # Xóa dữ liệu cũ (tùy chọn)
     current_file_path = os.path.abspath(__file__)

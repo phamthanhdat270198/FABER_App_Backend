@@ -74,7 +74,7 @@ class ProductVariant(BaseModel):
 
 class VolumeGroup(BaseModel):
     volume: Optional[float] = None
-    variants: ProductVariant 
+    variants: ProductVariant
 
 class ProductDetailGroupedResponse(BaseModel):
     id: int

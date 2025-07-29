@@ -10,8 +10,8 @@ class CartItem(Base):
     id = Column(Integer, primary_key=True, index=True)
     cart_id = Column(Integer, ForeignKey("carts.id"), nullable=False)
     type_detail_id = Column(Integer, ForeignKey("type_details.id"), nullable=False)
-    color_code = Column(String, nullable=False)  # Mã màu
-    volume = Column(Float, nullable=False)       # Dung tích
+    color_code = Column(String, nullable=False)
+    volume = Column(Float, nullable=False)
     quantity = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     modified_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -20,7 +20,6 @@ class CartItem(Base):
 
     # Relationship với Cart
     cart = relationship("Cart", back_populates="cart_items")
-    
     # Relationship với TypeDetail
     type_detail = relationship("TypeDetail", back_populates="cart_items")
 

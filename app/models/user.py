@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Enum, Date
 from sqlalchemy.orm import relationship
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone, timedelta
 
 from app.models.base import Base
 
@@ -11,6 +11,9 @@ class UserStatus(str, enum.Enum):
     ACCEPTED = "ACCEPTED"
     DECLINE = "DECLINE"
 
+def now_vn():
+    return datetime.now(timezone(timedelta(hours=7)))
+
 class User(Base):
     __tablename__ = "users"
 
@@ -19,7 +22,7 @@ class User(Base):
     dia_chi = Column(String, nullable=True)
     so_dien_thoai = Column(String, nullable=True)
     diem_thuong = Column(Float, default=0.0)
-    ngay_tao = Column(DateTime, default=datetime.now(timezone(timedelta(hours=7))), nullable=False)
+    ngay_tao = Column(DateTime(timezone=True), default=now_vn, nullable=False)
     admin = Column(Boolean, default=False, nullable=False)
     hashed_password = Column(String, nullable=True)
     status = Column(Enum(UserStatus), default=UserStatus.PENDING, nullable=False)
@@ -32,7 +35,7 @@ class User(Base):
     
     # Relationship với Order - sử dụng string để tránh circular import
     tokens = relationship("TokenStore", back_populates="user", cascade="all, delete-orphan")
-    carts = relationship("Cart", back_populates="user", cascade="all, delete-orphan" )
+    carts = relationship("Cart", back_populates="user", cascade="all, delete-orphan")
     spin_reward = relationship("SpinReward", back_populates='user')
 
     def __repr__(self):

@@ -68,15 +68,15 @@ class UnpaidOrderItemResponse(BaseModel):
 
 class paidOrderItemResponse(BaseModel):
     id: int
-    product: str            
-    code: str               
-    volume: float            
-    color_code: str          
-    quantity: int            
-    order_date: datetime     
-    total_price: float     
-    image_path: str    
-    bonus_points: float      
+    product: str
+    code: str
+    volume: float
+    color_code: str
+    quantity: int
+    order_date: datetime
+    total_price: float
+    image_path: str
+    bonus_points: float
 
     class Config:
         orm_mode = True

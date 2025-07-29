@@ -162,7 +162,7 @@ def create_registration_request_specific(
         **user_data,
         admin=False,  # Người dùng mới không có quyền admin
         status=UserStatusEnum.PENDING,  # Mặc định là đang chờ xác nhận
-        # ngay_tao=get_date_time()
+        ngay_tao=get_date_time()
     )
     user = create(db, obj_in=user_create)
     
@@ -187,12 +187,12 @@ def get_pending_registrations(
     return pending_users
 
 @router.get("/accepted-registrations", response_model=List[UserStatusInfo])
-def get_pending_registrations(
+def get_accepted_registrations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ) -> Any:
     """
-    Lấy danh sách yêu cầu đăng ký đang chờ xác nhận
+    Lấy danh sách người dùng đã được chấp nhận
     Chỉ admin mới có quyền truy cập
     """
     accepted_users = (
@@ -201,26 +201,24 @@ def get_pending_registrations(
         .order_by(User.ngay_tao.desc())
         .all()
     )
-    
     return accepted_users
 
 @router.get("/decline-registration", response_model=List[UserStatusInfo])
-def get_pending_registrations(
+def get_declined_registrations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ) -> Any:
     """
-    Lấy danh sách yêu cầu đăng ký đang chờ xác nhận
+    Lấy danh sách người dùng bị từ chối đăng ký
     Chỉ admin mới có quyền truy cập
     """
-    accepted_users = (
+    declined_users = (
         db.query(User)
         .filter(User.status == UserStatus.DECLINE)
         .order_by(User.ngay_tao.desc())
         .all()
     )
-    
-    return accepted_users
+    return declined_users
 
 
 @router.post("/approve-registration/{user_id}", response_model=UserBasicInfo)
