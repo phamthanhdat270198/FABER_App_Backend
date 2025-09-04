@@ -13,6 +13,7 @@ class TypeDetail(Base):
     package = Column(String, nullable=True)
     volume = Column(Float, nullable=True)
     price = Column(Float, nullable=True)
+    retail_price = Column(Float, nullable=True)
     m2_cover = Column(Float, nullable=True)
     promotion = Column(String, nullable=True)
     vname = Column(String, nullable=True)
