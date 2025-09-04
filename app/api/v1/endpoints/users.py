@@ -59,3 +59,36 @@ def read_users(
     """
     users = db.query(User).offset(skip).limit(limit).all()
     return users
+
+@router.put("/grant-admin", response_model=UserBasicInfo)
+def grant_admin_by_phone(
+    phone_number: str,  # Truyền vào số điện thoại của người dùng
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+) -> Any:
+    """
+    Cấp quyền admin cho người dùng dựa trên số điện thoại.
+    Chỉ admin mới có quyền cấp quyền admin cho người khác.
+    """
+    # Kiểm tra xem người dùng có tồn tại trong cơ sở dữ liệu không, tìm qua số điện thoại
+    user = db.query(User).filter(User.so_dien_thoai == phone_number).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy người dùng với số điện thoại này"
+        )
+    
+    # Kiểm tra nếu người yêu cầu cấp quyền không phải là admin
+    if not current_user.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Không đủ quyền để cấp quyền admin"
+        )
+    
+    # Cập nhật quyền admin cho người dùng
+    user.admin = True
+    db.commit()  # Lưu thay đổi vào cơ sở dữ liệu
+    db.refresh(user)  # Làm mới đối tượng user với các thay đổi đã được lưu
+    
+    return user
