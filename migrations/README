@@ -1,1 +1,28 @@
 Generic single-database configuration.
+
+Bước 1: Tạo Migration Mới
+
+alembic revision -m "Add new column to table"
+
+
+Bước 2: Sửa File Migration
+Mở file migration vừa được tạo ra và cập nhật mã nguồn để thêm cột vào bảng. Ví dụ, nếu bạn muốn thêm một cột age kiểu Integer vào bảng users, bạn sẽ thấy một đoạn mã như sau trong file migration:
+
+from alembic import op
+import sqlalchemy as sa
+
+
+# Các thông tin phiên bản và script không thay đổi
+def upgrade():
+    # Thêm cột "age" vào bảng "users"
+    op.add_column('users', sa.Column('age', sa.Integer(), nullable=True))
+
+
+def downgrade():
+    # Xóa cột "age" khỏi bảng "users"
+    op.drop_column('users', 'age')
+
+
+Bước 3: Áp Dụng Migration
+alembic upgrade head
+
