@@ -5,12 +5,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.db.base import get_db
+from app.models.user import User
 from app.models.type_detail import TypeDetail
 from app.models.paint_type import PaintType
 from app.models.image_resource import ImageResource
 from app.models.thumbnail import Thumbnail
 from app.schemas.products import PaintTypeListResponse, PaintTypeItem, ProductListResponse, ProductItem, \
-                                ProductDetailResponse, ProductDetailAsVolumeResponse, ProductDetailGroupedResponse      
+                                ProductDetailResponse, ProductDetailAsVolumeResponse, ProductDetailGroupedResponse   
+
+from app.api.deps import get_current_active_user   
 
 router = APIRouter()
 
@@ -38,7 +41,8 @@ def get_paint_types(
 def get_products_by_paint_type(
     paint_type_id: int = Path(..., title="ID của loại sơn", ge=1),
     preferred_volume: float = Query(18.0, title="Volume ưu tiên"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     API 2: Lấy danh sách sản phẩm theo loại sơn
@@ -75,12 +79,20 @@ def get_products_by_paint_type(
         # Lấy ảnh đầu tiên của sản phẩm nếu có
         image = db.query(ImageResource).filter(ImageResource.type_detail_id == selected_product.id).first()
         image_path = image.image_path if image else None
-        
+
+        # Xác định giá dựa trên loại người dùng
+        # print("current user agent = ", current_user.is_agent)
+        # print("current user retail = ", current_user.is_retail_customer)
+        if current_user.is_agent:
+            price = selected_product.price
+        else:
+            price = selected_product.retail_price
+        # print("price ==== ", price)
         result.append(ProductItem(
             id=selected_product.id,
             name=selected_product.product,
             volume=selected_product.volume,
-            price=selected_product.price,
+            price=price,
             image_path=image_path,
             vname=selected_product.vname
         ))
@@ -90,7 +102,6 @@ def get_products_by_paint_type(
         "paint_type_name": paint_type.paint_type,
         "products": result
     }
-
 
 
 @router.get("/detail/{product_id}", response_model=ProductDetailGroupedResponse)
