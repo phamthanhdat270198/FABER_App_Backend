@@ -8,6 +8,7 @@ from app.api.v1.endpoints import cart
 from app.api.v1.endpoints import contact
 from app.api.v1.endpoints import lucky_wheel
 from app.api.v1.endpoints import banner_promotion
+from app.api.v1.endpoints import lucky_wheel_term
 
 api_router = APIRouter()
 
@@ -22,3 +23,4 @@ api_router.include_router(cart.router, prefix="/cart", tags=["carts"])
 api_router.include_router(contact.router, prefix="/contact", tags=["contacts"])
 api_router.include_router(lucky_wheel.router, prefix="/lucky_wheel", tags=["lucky_wheel"])
 api_router.include_router(banner_promotion.router, prefix="/promotion", tags=["promotion_banner"])
+api_router.include_router(lucky_wheel_term.router, prefix="/lucky_wheel_terms", tags=["lucky_wheel_terms"])

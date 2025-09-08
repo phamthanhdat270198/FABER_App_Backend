@@ -29,6 +29,7 @@ class User(Base):
     date_of_birth = Column(Date, nullable=True)
     gender = Column(String, nullable=True)
     kth_spin = Column(Integer, default=0)
+    user_code = Column(String(50), nullable=True)  # Mã người dùng
 
     is_retail_customer = Column(Boolean, default=False, nullable=False)  
     is_agent = Column(Boolean, default=False, nullable=False)            

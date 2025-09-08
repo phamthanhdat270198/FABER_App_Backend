@@ -133,6 +133,43 @@ def create_registration_request(
     
     return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận"}
 
+# @router.post("/register-request-specific", status_code=status.HTTP_201_CREATED)
+# def create_registration_request_specific(
+#     *,
+#     db: Session = Depends(get_db),
+#     user_in: UserAuthWithRole
+# ) -> Any:
+#     """
+#     Tạo yêu cầu đăng ký người dùng mới
+#     """
+#     user = get_by_phone(db, so_dien_thoai=user_in.so_dien_thoai)
+#     if user:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Số điện thoại này đã được đăng ký",
+#         )
+    
+#     if not user_in.is_retail_customer and not user_in.is_agent:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="User phải thuộc ít nhất một loại: khách lẻ hoặc đại lý",
+#         )
+
+#     # Tạo người dùng mới với trạng thái PENDING
+#     user_data = user_in.dict()
+    
+#     user_create = UserCreateRegister(
+#         **user_data,
+#         admin=False,  # Người dùng mới không có quyền admin
+#         status=UserStatusEnum.PENDING,  # Mặc định là đang chờ xác nhận
+#         ngay_tao=get_date_time()
+#     )
+#     user = create(db, obj_in=user_create)
+    
+#     return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận",
+#     "debug_time": user_create.ngay_tao.isoformat() }
+
+
 @router.post("/register-request-specific", status_code=status.HTTP_201_CREATED)
 def create_registration_request_specific(
     *,
@@ -155,19 +192,105 @@ def create_registration_request_specific(
             detail="User phải thuộc ít nhất một loại: khách lẻ hoặc đại lý",
         )
 
+    # Tạo mã khách hàng tự động
+    def generate_user_code(db: Session) -> str:
+        """
+        Tạo mã khách hàng theo format KH000, KH001, ... với độ dài tự động mở rộng
+        """
+        prefix = "KH"
+        
+        # Tìm tất cả mã khách hàng có prefix KH và extract số
+        existing_codes = db.query(User.user_code).filter(
+            User.user_code.like(f'{prefix}%')
+        ).all()
+        
+        # Extract tất cả các số hiện có
+        existing_numbers = set()
+        max_digits = 3  # Bắt đầu với 3 chữ số
+        
+        for code_tuple in existing_codes:
+            if code_tuple[0]:  # code_tuple[0] là giá trị user_code
+                try:
+                    number_str = code_tuple[0][len(prefix):]  # Bỏ prefix "KH"
+                    if number_str.isdigit():
+                        number = int(number_str)
+                        existing_numbers.add(number)
+                        # Cập nhật độ dài tối thiểu cần thiết
+                        current_digits = len(number_str)
+                        if current_digits > max_digits:
+                            max_digits = current_digits
+                except (ValueError, IndexError):
+                    continue
+        
+        # Tìm số nhỏ nhất chưa được sử dụng
+        next_number = 0
+        while next_number in existing_numbers:
+            next_number += 1
+        
+        # Tính toán độ dài cần thiết cho số mới
+        required_digits = len(str(next_number))
+        if required_digits < max_digits:
+            required_digits = max_digits
+        
+        # Nếu số quá lớn so với độ dài hiện tại, tăng độ dài lên
+        if next_number >= (10 ** max_digits):
+            required_digits = max_digits + 1
+        
+        # Tạo mã với độ dài phù hợp
+        new_user_code = f"{prefix}{next_number:0{required_digits}d}"
+        
+        # Double-check không trùng lặp
+        existing_user = db.query(User).filter(User.user_code == new_user_code).first()
+        if existing_user:
+            # Fallback: tìm số tiếp theo
+            return generate_user_code_fallback(db, next_number + 1, required_digits, prefix)
+        
+        return new_user_code
+    
+    def generate_user_code_fallback(db: Session, start_number: int, min_digits: int, prefix: str) -> str:
+        """
+        Fallback method: tìm mã khách hàng tiếp theo không bị trùng
+        """
+        current_number = start_number
+        max_attempts = 10000  # Giới hạn số lần thử
+        
+        for _ in range(max_attempts):
+            # Tính độ dài cần thiết
+            required_digits = max(min_digits, len(str(current_number)))
+            user_code = f"{prefix}{current_number:0{required_digits}d}"
+            
+            existing_user = db.query(User).filter(User.user_code == user_code).first()
+            if not existing_user:
+                return user_code
+                
+            current_number += 1
+        
+        # Nếu vẫn không tìm được sau max_attempts lần thử
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Không thể tạo mã khách hàng mới sau nhiều lần thử"
+        )
+
     # Tạo người dùng mới với trạng thái PENDING
     user_data = user_in.dict()
+    
+    # Tạo mã khách hàng
+    user_code = generate_user_code(db)
     
     user_create = UserCreateRegister(
         **user_data,
         admin=False,  # Người dùng mới không có quyền admin
         status=UserStatusEnum.PENDING,  # Mặc định là đang chờ xác nhận
-        ngay_tao=get_date_time()
+        ngay_tao=get_date_time(),
+        user_code=user_code  # Thêm mã khách hàng
     )
     user = create(db, obj_in=user_create)
     
-    return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận",
-    "debug_time": user_create.ngay_tao.isoformat() }
+    return {
+        "message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận",
+        "user_code": user_code,  # Trả về mã khách hàng
+        "debug_time": user_create.ngay_tao.isoformat()
+    }
 
 @router.get("/pending-registrations", response_model=List[UserStatusInfo])
 def get_pending_registrations(
