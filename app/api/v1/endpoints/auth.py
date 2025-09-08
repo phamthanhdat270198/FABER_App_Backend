@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.crud.crud_user import authenticate, get_by_phone, create, is_admin, get, update
 from app.api.deps import get_db, get_current_user, get_current_admin_user
+from app.api.third_party_func import add_customer_to_kiot, get_kiot_token, get_branch_id
 from app.core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from app.schemas.token import Token
 from app.schemas.auth import Login, UserAuth, UserAuthWithRole
@@ -132,42 +133,6 @@ def create_registration_request(
     user = create(db, obj_in=user_create)
     
     return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận"}
-
-# @router.post("/register-request-specific", status_code=status.HTTP_201_CREATED)
-# def create_registration_request_specific(
-#     *,
-#     db: Session = Depends(get_db),
-#     user_in: UserAuthWithRole
-# ) -> Any:
-#     """
-#     Tạo yêu cầu đăng ký người dùng mới
-#     """
-#     user = get_by_phone(db, so_dien_thoai=user_in.so_dien_thoai)
-#     if user:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Số điện thoại này đã được đăng ký",
-#         )
-    
-#     if not user_in.is_retail_customer and not user_in.is_agent:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="User phải thuộc ít nhất một loại: khách lẻ hoặc đại lý",
-#         )
-
-#     # Tạo người dùng mới với trạng thái PENDING
-#     user_data = user_in.dict()
-    
-#     user_create = UserCreateRegister(
-#         **user_data,
-#         admin=False,  # Người dùng mới không có quyền admin
-#         status=UserStatusEnum.PENDING,  # Mặc định là đang chờ xác nhận
-#         ngay_tao=get_date_time()
-#     )
-#     user = create(db, obj_in=user_create)
-    
-#     return {"message": "Đã tạo yêu cầu đăng ký thành công, chờ admin xác nhận",
-#     "debug_time": user_create.ngay_tao.isoformat() }
 
 
 @router.post("/register-request-specific", status_code=status.HTTP_201_CREATED)
@@ -367,9 +332,37 @@ def approve_registration(
             detail="Người dùng này đã được phê duyệt trước đó",
         )
     
+
     # Cập nhật trạng thái thành ACCEPTED
     user_update = UserUpdate(status=UserStatusEnum.ACCEPTED)
     updated_user = update(db, db_obj=user, obj_in=user_update)
+    
+    try:
+        # Lấy access token
+        access_token = get_kiot_token()
+
+        id_branch = get_branch_id(access_token)
+        
+        # Tạo customer trên KiotViet
+        add_customer_response = add_customer_to_kiot(
+            user_code=updated_user.user_code,
+            name=updated_user.ho_ten,
+            phone_number=updated_user.so_dien_thoai,
+            address=updated_user.dia_chi,
+            branch_id=id_branch,  # Thay bằng branch_id thực tế của bạn
+            access_token=access_token
+        )
+        
+        # Xử lý response từ KiotViet
+        if not add_customer_response.get("success"):
+            # Log lỗi nhưng vẫn trả về user đã được approve
+            print(f"Warning: Failed to create customer in KiotViet for user {user_id}: {add_customer_response}")
+        else:
+            print(f"Successfully created customer in KiotViet for user {user_id}")
+            
+    except Exception as e:
+        # Log lỗi nhưng không fail toàn bộ process approve
+        print(f"Error integrating with KiotViet for user {user_id}: {str(e)}")
     
     return updated_user
 

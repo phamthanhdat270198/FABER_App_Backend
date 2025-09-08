@@ -2,6 +2,7 @@ from pydantic import BaseModel, validator, Field
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta, date
 from enum import Enum
+import re
 # from app.models.rewards_info import  RewardType
 # def get_date_time():
 #     utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
