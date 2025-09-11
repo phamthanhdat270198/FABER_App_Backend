@@ -177,3 +177,131 @@ def get_branch_id(access_token: str) -> int:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Request failed when getting branches: {str(e)}"
         )
+
+def create_kiot_order(access_token, retailer, order_data):
+    """
+    Tạo đơn đặt hàng đơn giản
+    
+    Args:
+        access_token (str): KiotViet API access token
+        retailer (str): KiotViet retailer 
+        order_data (dict): Dữ liệu đơn hàng
+        
+    Returns:
+        dict: Kết quả API response
+    """
+    url = "https://public.kiotapi.com/orders"
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Retailer": retailer,
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=order_data)
+        response.raise_for_status()
+        
+        print("✅ Tạo đơn hàng thành công!")
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Lỗi khi tạo đơn hàng: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"Chi tiết lỗi: {e.response.text}")
+        return None
+
+def create_order_data(customer_info, products, branch_id=333995):
+    """
+    Tạo dữ liệu đơn hàng đơn giản
+    
+    Args:
+        customer_info (dict): Thông tin khách hàng
+        products (list): Danh sách sản phẩm
+        branch_id (int): ID chi nhánh
+        
+    Returns:
+        dict: Dữ liệu đơn hàng
+    """
+
+    order_data = {
+        "isApplyVoucher":False,
+        "branchId": branch_id,
+        "discount": 0,
+        "method": "Transfer",
+        "orderDetails": products,
+        "customer": customer_info
+    }
+    
+    return order_data
+
+def get_code_by_name(name, ACCESS_TOKEN, RETAILER):
+    """
+    Tìm code và retailerId theo tên sản phẩm từ API Kiot.
+    Trả về tuple (code, retailerId) nếu tìm thấy, ngược lại trả về None.
+    """
+    url = "https://public.kiotapi.com/products"
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Retailer": RETAILER,
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        # Gọi API
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        
+        # Parse JSON response
+        data = response.json()
+        
+        # Tìm kiếm sản phẩm theo tên
+        for item in data.get("data", []):
+            if item.get("name", "").lower() == name.lower():
+                code = item.get("code")
+                retailer_id = item.get("retailerId")
+                return (code, retailer_id)
+                
+        return None
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Lỗi khi gọi API: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"Lỗi decode JSON: {e}")
+        return None
+    except Exception as e:
+        print(f"Lỗi không xác định: {e}")
+
+def create_simple_order(access_token, order_data):
+    """
+    Tạo đơn đặt hàng đơn giản
+    
+    Args:
+        access_token (str): KiotViet API access token
+        retailer_id (str): KiotViet retailer ID
+        order_data (dict): Dữ liệu đơn hàng
+        
+    Returns:
+        dict: Kết quả API response
+    """
+    url = "https://public.kiotapi.com/orders"
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Retailer": "sonfaber",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=order_data)
+        response.raise_for_status()
+        
+        print("✅ Tạo đơn hàng thành công!")
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Lỗi khi tạo đơn hàng: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"Chi tiết lỗi: {e.response.text}")
+        return None

@@ -1,3 +1,4 @@
+import requests
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -18,9 +19,12 @@ from app.api.deps import get_current_active_user
 from app.schemas.cart_items import CartItemCreate, CartItemResponse,CartItemThumbnailResponse, UnpaidOrderItemResponse, UnpaidOrderHistoryResponse, paidOrderItemResponse, PaidOrderHistoryResponse, AdminGroupedUnpaidResponse, UnpaidOrderItemForAdmin, UserUnpaidGroup,UpdatedItemResponse,  AdminUpdateResponse
 
 from app.api.deps import get_db, get_current_user, get_current_admin_user
-
+from app.api.third_party_func import *
+from app.api.get_product_from_kiot import *
 router = APIRouter()
 REWARD = 10
+
+
 
 @router.post("/items", response_model=CartItemResponse, status_code=status.HTTP_201_CREATED)
 def add_item_to_cart(
@@ -246,6 +250,10 @@ def place_order(
     - Chuyển trạng thái các mặt hàng đã chọn trong giỏ hàng sang không hoạt động (is_active = False)
     - Cộng điểm thưởng cho người dùng
     """
+    ACCESS_TOKEN = get_kiot_token()
+    RETAILER = "sonfaber"
+    initialize_searcher(ACCESS_TOKEN, RETAILER, rebuild_cache=False)
+
     # Kiểm tra nếu không có sản phẩm nào được chọn
     if not order.cart_item_ids or len(order.cart_item_ids) == 0:
         raise HTTPException(
@@ -282,17 +290,55 @@ def place_order(
     total_amount = 0
     total_points = 0
     items_count = len(cart_items)
+    kiot_products = []
     
     # Chuyển trạng thái từng mặt hàng sang False
     for item in cart_items:
         # Tính giá từ type_detail và số lượng
         type_detail = db.query(TypeDetail).filter(TypeDetail.id == item.type_detail_id).first()
+        if not type_detail:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Không tìm thấy thông tin sản phẩm với type_detail_id: {item.type_detail_id}"
+            )
         price = type_detail.price * item.quantity if type_detail.price else 0
         total_amount += price
         total_points += type_detail.bonus_points
         # Cập nhật trạng thái
         item.is_active = False
         item.modified_at = datetime.utcnow()
+        # Tạo tên sản phẩm: vname + volume
+        product_name = f"{type_detail.vname} {int(item.volume)}L" 
+        print("product name ==== ", product_name)
+        product_id, product_code, product_price = find_product_fast(product_name)
+        main_product = {
+            "productId": product_id,  # retailerId cố định theo ví dụ
+            "productCode": product_code,
+            # "productName": product_name,
+            "quantity": item.quantity,
+            "price": product_price,
+        }
+        kiot_products.append(main_product)
+        # Nếu có color_code, tạo thêm một sản phẩm màu
+        extend_name = ""
+        if "nội thất" in type_detail.vname:
+            extend_name = "nội thất"
+        elif "ngoại thất" in type_detail.vname:
+            extend_name = "ngoại thất"
+        
+        if hasattr(item, 'color_code') and item.color_code!="0":
+            product_name = f"{item.color_code} {extend_name} {int(item.volume)}L"
+            product_id, product_code, product_price = find_product_fast(product_name)
+            color_product = {
+                "productId": product_id,  # retailerId cố định
+                "productCode": product_code,  # Code riêng cho màu
+                # "productName": item.color_code,  # Tên là giá trị color_code
+                "quantity": item.quantity,
+                "price": product_price,  # Có thể đặt giá 0 hoặc giá riêng cho màu
+                # "discount": 0,
+                # "discountRatio": 0
+            }
+            kiot_products.append(color_product)
     #fb 01 32 23 505 +2
     #fb 102 33, 350, 365, 25, 536, 845 + 7/ thung va 2d / lon 5l
     # fb 381, 545, m11, m35, ac500, pu100 +10/thung va +3/lon
@@ -305,6 +351,17 @@ def place_order(
     # Lưu các thay đổi vào database
     db.commit()
     
+    customer_info = {
+        "code": current_user.user_code,
+        "name": current_user.ho_ten,
+        "contactNumber": current_user.so_dien_thoai,
+        "address": current_user.dia_chi,
+        # "email": order.customer_email
+    }
+    branch_id = get_branch_id(ACCESS_TOKEN)
+    order_data = create_order_data(customer_info, kiot_products, branch_id)
+    result = create_simple_order(ACCESS_TOKEN, order_data)
+
     return OrderResponse(
         message="Đặt hàng thành công",
         items_count=items_count,

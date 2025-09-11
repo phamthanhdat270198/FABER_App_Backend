@@ -11,6 +11,7 @@ class ContactInquiryBase(BaseModel):
     
     @validator('phone_number')
     def validate_phone_number(cls, v):
+        # Kiểm tra cơ bản cho số điện thoại
         cleaned = v.replace('+', '').replace('-', '').replace(' ', '')
         if not cleaned.isdigit():
             raise ValueError('Số điện thoại chỉ được chứa chữ số, +, -, hoặc khoảng trắng')
