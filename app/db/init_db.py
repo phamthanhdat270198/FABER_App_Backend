@@ -93,6 +93,7 @@ def seed_data():
                     gender = "Nam", 
                     admin = True
                 )
+                
             ]
             db.add_all(sample_users)
             db.commit()
@@ -319,8 +320,8 @@ def seed_type_detail():
             paint_types = db.query(PaintType).all()
             
             if paint_types:
-                # Tạo dữ liệu mẫu cho sơn nước (nếu có)
-                son_min = next((pt for pt in paint_types if pt.paint_type == "Sơn mịn nội ngoại thất"), None)
+                # Tạo dữ liệu 
+                son_min = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn phủ nội thất cao cấp"), None)
                 if son_min:
                     son_min_details = [
                         TypeDetail(
@@ -329,50 +330,30 @@ def seed_type_detail():
                             code="FB32",
                             package="Thùng",
                             volume=18.0,
-                            price=920000,
-                            m2_cover=80,
+                            price=250000,
+                            retail_price=400000,
+                            m2_cover=130,
                             promotion="",
-                            features= "Sơn mịn nội thất",
+                            features= "Độ mịn hoàn hảo, độ phủ cao",
                             vname="Sơn mịn nội thất cao câp",
-                            bonus_points = 2  
+                            bonus_points = 0,
+                            bonus_points_retail=0  
                         ),
-                        TypeDetail(
-                            paint_type_id=son_min.id,
-                            product="SILVER",
-                            code="FB505",
-                            package="Thùng",
-                            volume=18.0,
-                            price=2360000,
-                            m2_cover=90,
-                            promotion="",
-                            features= "Sơn mịn ngoại thất\nĐộ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
-                            vname="Sơn mịn ngoại thất cao cấp",
-                            bonus_points = 2
-                        ),
-                        TypeDetail(
-                            paint_type_id=son_min.id,
-                            product="SILVER",
-                            code="FB505",
-                            package="Lon",
-                            volume=5.0,
-                            price=750000,
-                            m2_cover=27,
-                            promotion="",
-                            features= "Sơn mịn ngoại thất\nĐộ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
-                            vname="Sơn mịn ngoại thất cao cấp"
-                        ),
+                        
                         TypeDetail(
                             paint_type_id=son_min.id,
                             product="SUPER WHITE",
                             code="FB33",
                             package="Thùng",
                             volume=18.0,
-                            price=1880000,
-                            m2_cover=90,
+                            price=560000,
+                            retail_price=780000,
+                            m2_cover=130,
                             promotion="",
                             features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
                             vname="Sơn siêu trắng trần",
-                            bonus_points = 7
+                            bonus_points = 0,
+                            bonus_points_retail=0 
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -380,25 +361,29 @@ def seed_type_detail():
                             code="FB33",
                             package="Lon",
                             volume=5.0,
+                            price=170000,
+                            retail_price=240000,
+                            m2_cover=40,
+                            promotion="",
+                            features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
+                            vname="Sơn siêu trắng trần",
+                            bonus_points = 0,
+                            bonus_points_retail=0 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="EASY CLEAN",
+                            code="FB350",
+                            package="Thùng",
+                            volume=18.0,
                             price=590000,
-                            m2_cover=22,
+                            retail_price=1000000,
+                            m2_cover=150,
                             promotion="",
-                            features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
-                            vname="Sơn siêu trắng trần",
-                            bonus_points = 2
-                        ),
-                        TypeDetail(
-                            paint_type_id=son_min.id,
-                            product="EASY CLEAN",
-                            code="FB350",
-                            package="Thùng",
-                            volume=18.0,
-                            price=2280000,
-                            m2_cover=100,
-                            promotion="",
-                            features= "Sơn siêu mịn lau chùi nội thất cao cấp\nChống thấm tốt, chống nấm mốc, rửa sạch vết bẩn, độ bền màu cao",
-                            vname="Sơn siêu mịn lau chùi",
-                            bonus_points = 7
+                            features= "Khả năng chống thấm tốt, chống nấm môc, rửa sạch vết bẩn, độ bền màu cao.",
+                            vname="Sơn siêu mịn lau chùi nội thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail=0 
                         ),
                         TypeDetail(
                             paint_type_id=son_min.id,
@@ -406,77 +391,267 @@ def seed_type_detail():
                             code="FB350",
                             package="Lon",
                             volume=5.0,
-                            price=670000,
-                            m2_cover=25,
+                            price=190000,
+                            retail_price=260000,
+                            m2_cover=45,
                             promotion="",
-                            features= "Sơn siêu mịn lau chùi nội thất cao cấp\nChống thấm tốt, chống nấm mốc, rửa sạch vết bẩn, độ bền màu cao",
-                            vname="Sơn siêu mịn lau chùi",
-                            bonus_points = 2
-                        )
+                            features= "Khả năng chống thấm tốt, chống nấm môc, rửa sạch vết bẩn, độ bền màu cao.",
+                            vname="Sơn siêu mịn lau chùi nội thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail=0 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SATIN",
+                            code="FB365",
+                            package="Thùng",
+                            volume=18.0,
+                            price=905000,
+                            retail_price=1547000,
+                            m2_cover=180,
+                            promotion="",
+                            features= "Màng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            vname="Sơn bóng nội thất cao cấp",
+                            bonus_points = 3,
+                            bonus_points_retail=30 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SATIN",
+                            code="FB365",
+                            package="Lon",
+                            volume=5.0,
+                            price=290000,
+                            retail_price=495000,
+                            m2_cover=50,
+                            promotion="",
+                            features= "Màng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            vname="Sơn bóng nội thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail=0 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SHAPPIRE 7IN1",
+                            code="FB381",
+                            package="Thùng",
+                            volume=18.0,
+                            price=1050000,
+                            retail_price=1820000,
+                            m2_cover=180,
+                            promotion="",
+                            features= "Màng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            vname="Sơn siêu bóng nội thất cao cấp",
+                            bonus_points = 3,
+                            bonus_points_retail=30 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SHAPPIRE 7IN1",
+                            code="FB381",
+                            package="Lon",
+                            volume=5.0,
+                            price=340000,
+                            retail_price=532000,
+                            m2_cover=50,
+                            promotion="",
+                            features= "Màng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            vname="Sơn siêu bóng nội thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail=0 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="SHAPPIRE 7IN1",
+                            code="FB381",
+                            package="Lon",
+                            volume=1.0,
+                            price=120000,
+                            retail_price=176000,
+                            m2_cover=10,
+                            promotion="",
+                            features= "Màng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            vname="Sơn siêu bóng nội thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail=0 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="MASTER NANO",
+                            code="FB399",
+                            package="Lon",
+                            volume=5.0,
+                            price=450000,
+                            retail_price=750000,
+                            m2_cover=50,
+                            promotion="",
+                            features= "Màng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            vname="Sơn siêu bóng men sứ nội thất cao cấp",
+                            bonus_points = 3,
+                            bonus_points_retail= 30 
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_min.id,
+                            product="MASTER NANO",
+                            code="FB399",
+                            package="Lon",
+                            volume=1.0,
+                            price=125000,
+                            retail_price=193000,
+                            m2_cover=10,
+                            promotion="",
+                            features= "Màng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
+                            vname="Sơn siêu bóng men sứ nội thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
                     ]
                     db.add_all(son_min_details)
                 
                 # Tạo dữ liệu mẫu cho sơn dầu (nếu có)
-                son_bong = next((pt for pt in paint_types if pt.paint_type == "Sơn bóng nội ngoại thất"), None)
+                son_bong = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn phủ ngoại thất cao cấp"), None)
                 if son_bong:
                     son_bong_details = [
                         TypeDetail(
                             paint_type_id=son_bong.id,
-                            product="SATIN",
-                            code="FB365",
+                            product="SILVER",
+                            code="FB505",
                             package="Thùng",
                             volume=18.0,
-                            price=3270000,
-                            m2_cover=115,
+                            price=620000,
+                            retail_price=1010000,
+                            m2_cover=110,
                             promotion="",
-                            features= "Sơn bóng nội thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            vname="Sơn bóng nội",
-                            bonus_points = 7
+                            features= "Độ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
+                            vname="Sơn mịn ngoại thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
                         ),
                         TypeDetail(
                             paint_type_id=son_bong.id,
-                            product="SATIN",
-                            code="FB365",
+                            product="SILVER",
+                            code="FB505",
                             package="Lon",
                             volume=5.0,
+                            price=220000,
+                            retail_price=343000,
+                            m2_cover=40,
+                            promotion="",
+                            features= "Độ che phủ tốt, chống nấm mốc, chịu ẩm tốt",
+                            vname="Sơn mịn ngoại thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="NANO SHIELD",
+                            code="FB536",
+                            package="Lon",
+                            volume=5.0,
+                            price=350000,
+                            retail_price=546000,
+                            m2_cover=50,
+                            promotion="",
+                            features= "Màng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            vname="Sơn bóng ngoại thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="NANO SHIELD",
+                            code="FB536",
+                            package="Thùng",
+                            volume=18.0,
                             price=1070000,
-                            m2_cover=32,
+                            retail_price=1800000,
+                            m2_cover=180,
                             promotion="",
-                            features= "Sơn bóng nội thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            vname="Sơn bóng nội",
-                            bonus_points = 2
+                            features= "Màng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
+                            vname="Sơn bóng ngoại thất cao cấp",
+                            bonus_points = 3,
+                            bonus_points_retail= 40
                         ),
                         TypeDetail(
                             paint_type_id=son_bong.id,
-                            product="NANO SHIELD",
-                            code="FB536",
+                            product="DIAMOND 8IN1",
+                            code="FB545",
+                            package="Lon",
+                            volume=1.0,
+                            price=130000,
+                            retail_price=190000,
+                            m2_cover=12,
+                            promotion="",
+                            features= "Màng sơn bóng chắc, chống tia cực tím, tự làm sạch, chống nóng, chống thấm, siêu bền màu",
+                            vname="Sơn siêu bóng ngoại thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="DIAMOND 8IN1",
+                            code="FB545",
                             package="Lon",
                             volume=5.0,
-                            price=750000,
-                            m2_cover=35,
+                            price=425000,
+                            retail_price=665000,
+                            m2_cover=60,
                             promotion="",
-                            features= "Sơn bóng ngoại thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            vname="Sơn bóng ngoại",
-                            bonus_points = 2
+                            features= "Màng sơn bóng chắc, chống tia cực tím, tự làm sạch, chống nóng, chống thấm, siêu bền màu",
+                            vname="Sơn siêu bóng ngoại thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
                         ),
                         TypeDetail(
                             paint_type_id=son_bong.id,
-                            product="NANO SHIELD",
-                            code="FB536",
+                            product="DIAMOND 8IN1",
+                            code="FB545",
                             package="Thùng",
                             volume=18.0,
-                            price=4080000,
-                            m2_cover=130,
+                            price=1299000,
+                            retail_price=2200000,
+                            m2_cover=210,
                             promotion="",
-                            features= "Sơn bóng ngoại thất cao cấp\nMàng sơn bóng chắc, dẻo dai, màu sơn tươi sáng, độ phủ và chịu chùi rửa tối đa",
-                            vname="Sơn bóng ngoại",
-                            bonus_points = 7
-                        )
+                            features= "Màng sơn bóng chắc, chống tia cực tím, tự làm sạch, chống nóng, chống thấm, siêu bền màu",
+                            vname="Sơn siêu bóng ngoại thất cao cấp",
+                            bonus_points = 3,
+                            bonus_points_retail= 40
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="LIFE MASTER",
+                            code="FB566",
+                            package="Lon",
+                            volume=5.0,
+                            price=610000,
+                            retail_price=920000,
+                            m2_cover=70, #can chinh lai
+                            promotion="",
+                            features= "Màng sơn bóng chắc, chống tia cực tím, tự làm sạch, chống nóng, chống thấm, siêu bền màu",
+                            vname="Sơn men sứ chống bám bụi ngoại thất đặc biệt",
+                            bonus_points = 3,
+                            bonus_points_retail= 40
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_bong.id,
+                            product="LIFE MASTER",
+                            code="FB566",
+                            package="Lon",
+                            volume=1.0,
+                            price=150000,
+                            retail_price=215000,
+                            m2_cover=12,
+                            promotion="",
+                            features= "Màng sơn bóng chắc, chống tia cực tím, tự làm sạch, chống nóng, chống thấm, siêu bền màu",
+                            vname="Sơn men sứ chống bám bụi ngoại thất đặc biệt",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
                     ]
                     db.add_all(son_bong_details)
                 
                 # Tạo dữ liệu mẫu cho sơn epoxy (nếu có)
-                son_chong_tham_mau = next((pt for pt in paint_types if pt.paint_type == "Sơn chống thấm"), None)
+                son_chong_tham_mau = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn chống thấm"), None)
                 if son_chong_tham_mau:
                     son_chong_tham_mau_details = [
                         TypeDetail(
@@ -485,12 +660,14 @@ def seed_type_detail():
                             code="FB845",
                             package="Thùng",
                             volume=18.0,
-                            price=3760000,
-                            m2_cover=85,
+                            price=1130000,
+                            retail_price=1860000,
+                            m2_cover=180,
                             promotion="",
-                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủ tuyệt đối, chống nóng, độ bền cao",
-                            vname="Sơn chống thấm màu",
-                            bonus_points = 7
+                            features= "Màng Acrylic tường đứng, chống thấm vượt trội, chống nóng, độ bền cao",
+                            vname="Sơn chống thấm màu cao cấp",
+                            bonus_points = 3,
+                            bonus_points_retail= 30
                         ),
                         TypeDetail(
                             paint_type_id=son_chong_tham_mau.id,
@@ -498,18 +675,65 @@ def seed_type_detail():
                             code="FB845",
                             package="Lon",
                             volume=5.0,
-                            price=3760000,
-                            m2_cover=15,
+                            price=360000,
+                            retail_price=597000,
+                            m2_cover=50,
                             promotion="",
-                            features= "Sơn chống thấm màu Acrylic\nChống thấm vượt trội, che phủ tuyệt đối, chống nóng, độ bền cao",
-                            vname="Sơn chống thấm màu",
-                            bonus_points = 2
+                            features= "Màng Acrylic tường đứng, chống thấm vượt trội, chống nóng, độ bền cao",
+                            vname="Sơn chống thấm màu cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_chong_tham_mau.id,
+                            product="PU1000",
+                            code="CTSM",
+                            package="Thùng",
+                            volume=18.0,
+                            price=1400000,
+                            retail_price=2160000,
+                            m2_cover=120,
+                            promotion="",
+                            features= "Chống thấm sàn mái lộ thiên , chống chịu tia UV, co giãn , đàn hồi tuyệt vời",
+                            vname="Sơn chống thấm đa năng",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_chong_tham_mau.id,
+                            product="PU1000",
+                            code="CTSM",
+                            package="Lon",
+                            volume=5.0,
+                            price=450000,
+                            retail_price=675000,
+                            m2_cover=35,
+                            promotion="",
+                            features= "Chống thấm sàn mái lộ thiên , chống chịu tia UV, co giãn , đàn hồi tuyệt vời",
+                            vname="Sơn chống thấm đa năng",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_chong_tham_mau.id,
+                            product="PU1000",
+                            code="CTSM",
+                            package="Lon",
+                            volume=1.0,
+                            price=130000,
+                            retail_price=195000,
+                            m2_cover=7,
+                            promotion="",
+                            features= "Chống thấm sàn mái lộ thiên , chống chịu tia UV, co giãn , đàn hồi tuyệt vời",
+                            vname="Sơn chống thấm đa năng",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
                         )
                     ]
                     db.add_all(son_chong_tham_mau_details)
 
                 # Tạo dữ liệu mẫu cho  Sơn lót chống kiềm (nếu có)
-                son_lot_chong_kiem = next((pt for pt in paint_types if pt.paint_type == "Sơn lót chống kiềm"), None)
+                son_lot_chong_kiem = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn lót kháng kiềm"), None)
                 if son_lot_chong_kiem:
                     son_lot_chong_kiem_details = [
                         TypeDetail(
@@ -518,12 +742,14 @@ def seed_type_detail():
                             code="M35",
                             package="Thùng",
                             volume=18.0,
-                            price=4550000,
-                            m2_cover=120,
+                            price=1350000,
+                            retail_price=2050000,
+                            m2_cover=180,
                             promotion="",
-                            features= "Sơn lót siêu kháng kiềm muối tường ẩm\nChống kiềm muối đặc biệt",
-                            vname="Sơn lót siêu kháng kiềm muối ngoại thất đặc biệt",
-                            bonus_points = 10
+                            features= "Chống kiềm muối đặc biệt , bám dính tuyệt vời",
+                            vname="Sơn lót kháng kiềm muối vùng biển đặc biệt",
+                            bonus_points = 2,
+                            bonus_points_retail=20
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -531,12 +757,14 @@ def seed_type_detail():
                             code="M35",
                             package="Lon",
                             volume=5.0,
-                            price=1350000,
-                            m2_cover=35,
+                            price=430000,
+                            retail_price=665000,
+                            m2_cover=50,
                             promotion="",
-                            features= "Sơn lót siêu kháng kiềm muối tường ẩm\nChống kiềm muối đặc biệt",
-                            vname="Sơn lót siêu kháng kiềm muối ngoại thất đặc biệt",
-                            bonus_points = 3
+                            features= "Chống kiềm muối đặc biệt , bám dính tuyệt vời",
+                            vname="Sơn lót kháng kiềm muối vùng biển đặc biệt",
+                            bonus_points = 0,
+                            bonus_points_retail = 0
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -544,12 +772,14 @@ def seed_type_detail():
                             code="M11",
                             package="Thùng",
                             volume=18.0,
-                            price=2370000,
-                            m2_cover=120,
+                            price=750000,
+                            retail_price=1150000,
+                            m2_cover=170,
                             promotion="",
-                            features= "Sơn lót kháng kiềm nội thất đặc biệt\nKháng kiềm, chống rêu mốc, tăng độ bám dính, chống loang ố",
-                            vname="Sơn lót kháng kiềm muối nội thất đặc biệt",
-                            bonus_points = 10
+                            features= "Kháng kiềm, nấm mốc, tăng độ bám dính, độ phủ, thân thiện với môi trường",
+                            vname="Sơn lót siêu kháng kiềm nội thất đặc biệt",
+                            bonus_points = 2,
+                            bonus_points_retail = 20
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -557,12 +787,14 @@ def seed_type_detail():
                             code="M11",
                             package="Lon",
                             volume=5.0,
-                            price=770000,
-                            m2_cover=35,
+                            price=210000,
+                            retail_price=352000,
+                            m2_cover=45,
                             promotion="",
-                            features= "Sơn lót kháng kiềm nội thất đặc biệt\nKháng kiềm, chống rêu mốc, tăng độ bám dính, chống loang ố",
-                            vname="Sơn lót kháng kiềm muối nội thất đặc biệt",
-                            bonus_points = 3
+                            features= "Kháng kiềm, nấm mốc, tăng độ bám dính, độ phủ, thân thiện với môi trường",
+                            vname="Sơn lót siêu kháng kiềm nội thất đặc biệt",
+                            bonus_points = 0,
+                            bonus_points_retail = 0
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -570,12 +802,14 @@ def seed_type_detail():
                             code="FB23",
                             package="Thùng",
                             volume=18.0,
-                            price=2660000,
-                            m2_cover=120,
+                            price=505000,
+                            retail_price=930000,
+                            m2_cover=170,
                             promotion="",
-                            features= "Sơn lót kháng kiềm ngoại thất\nKháng kiềm, nấm mốc, tăng độ bám dính",
-                            vname="Sơn lót ngoại thất eco",
-                            bonus_points = 2
+                            features= "Kháng kiềm, nấm mốc, tăng độ bám dính",
+                            vname="Sơn lót kháng kiềm ngoại thất",
+                            bonus_points = 0,
+                            bonus_points_retail = 0
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -583,12 +817,14 @@ def seed_type_detail():
                             code="FB25",
                             package="Thùng",
                             volume=18.0,
-                            price=3410000,
-                            m2_cover=120,
+                            price=950000,
+                            retail_price=1490000,
+                            m2_cover=180,
                             promotion="",
-                            features= "Sơn lót kháng kiềm ngoại thất cao cấp\nChống muối, chống nấm mốc, chống phấn hóa, độ bền cao",
+                            features= "Chống  muối, chống nấm mốc, chống phấn hoá , độ bền cao",
                             vname="Sơn lót kháng kiềm ngoại thất cao cấp",
-                            bonus_points = 7
+                            bonus_points = 2,
+                            bonus_points_retail = 20
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -596,12 +832,14 @@ def seed_type_detail():
                             code="FB25",
                             package="Lon",
                             volume=5.0,
-                            price=1060000,
-                            m2_cover=35,
+                            price=295000,
+                            retail_price=529000,
+                            m2_cover=50,
                             promotion="",
-                            features= "Sơn lót kháng kiềm ngoại thất cao cấp\nChống muối, chống nấm mốc, chống phấn hóa, độ bền cao",
+                            features= "Chống  muối, chống nấm mốc, chống phấn hoá , độ bền cao",
                             vname="Sơn lót kháng kiềm ngoại thất cao cấp",
-                            bonus_points = 2
+                            bonus_points = 0,
+                            bonus_points_retail = 0
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -609,12 +847,14 @@ def seed_type_detail():
                             code="FB01",
                             package="Thùng",
                             volume=18.0,
-                            price=1790000,
+                            price=360000,
+                            retail_price=620000,
                             m2_cover=110,
                             promotion="",
-                            features= "Sơn lót kháng kiềm nội thất\nKháng kiềm, chống nấm mốc, tăng độ bám dính, độ phủ",
-                            vname="Sơn lót nội thất eco",
-                            bonus_points = 2
+                            features= "Chống kiềm , chống nấm mốc",
+                            vname="Sơn lót kháng kiềm nội thất",
+                            bonus_points = 0,
+                            bonus_points_retail = 0
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -622,12 +862,14 @@ def seed_type_detail():
                             code="FB102",
                             package="Thùng",
                             volume=18.0,
-                            price=2250000,
-                            m2_cover=115,
+                            price=550000,
+                            retail_price=994000,
+                            m2_cover=170,
                             promotion="",
-                            features= "Sơn lót kháng kiềm nội thất cao cấp\nThẩm thấu, bám dính, độ phủ cao, chống phấn hóa, chống loang ố màu",
-                            vname="Sơn lót nội thất cao cấp",
-                            bonus_points = 7
+                            features= "Thẩm thấu, bám dính, độ phủ cao, chống phấn hóa, chống loang ố màu",
+                            vname="Sơn lót kháng kiềm nội thất cao cấp",
+                            bonus_points = 2,
+                            bonus_points_retail = 20
                         ),
                         TypeDetail(
                             paint_type_id=son_lot_chong_kiem.id,
@@ -635,98 +877,19 @@ def seed_type_detail():
                             code="FB102",
                             package="Thùng",
                             volume=5.0,
-                            price=690000,
-                            m2_cover=33,
+                            price=180000,
+                            retail_price=310000,
+                            m2_cover=45,
                             promotion="",
                             features= "Sơn lót kháng kiềm nội thất cao cấp\nThẩm thấu, bám dính, độ phủ cao, chống phấn hóa, chống loang ố màu",
-                            vname="Sơn lót nội thất cao cấp",
-                            bonus_points = 2
+                            vname="Sơn lót kháng kiềm nội thất cao cấp",
+                            bonus_points = 0,
+                            bonus_points_retail = 0
                         )
                     ]
                     db.add_all(son_lot_chong_kiem_details)
 
-                # Tạo dữ liệu mẫu cho Sơn siêu bóng men sứ (nếu có)
-                metro_lux = next((pt for pt in paint_types if pt.paint_type == "Sơn siêu bóng men sứ"), None)
-                if metro_lux:
-                    metro_lux_details = [
-                        TypeDetail(
-                            paint_type_id=metro_lux.id,
-                            product="CRYSTAL",
-                            code="M12",
-                            package="Thùng",
-                            volume=15.0,
-                            price=4200000,
-                            m2_cover=120,
-                            promotion="",
-                            features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
-                            vname="Sơn bóng men sứ nội thất",
-                            bonus_points = 15
-                        ),
-                        TypeDetail(
-                            paint_type_id=metro_lux.id,
-                            product="CRYSTAL",
-                            code="M12",
-                            package="Lon",
-                            volume=5.0,
-                            price=1380000,
-                            m2_cover=30,
-                            promotion="",
-                            features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
-                            vname="Sơn bóng men sứ nội thất",
-                            bonus_points = 3
-                        ),
-                        TypeDetail(
-                            paint_type_id=metro_lux.id,
-                            product="CRYSTAL",
-                            code="M12",
-                            package="Lon",
-                            volume=1.0,
-                            price=375000,
-                            m2_cover=10,
-                            promotion="",
-                            features= "Sơn siêu bóng men sứ nội thất cao cấp\nMàng sơn siêu bóng, sang trọng, đanh chắc, chống nấm mốc, chùi rửa tối đa",
-                            vname="Sơn bóng men sứ nội thất"  # Để trống hoặc thêm dữ liệu vname thực tế
-                        ),
-                        TypeDetail(
-                            paint_type_id=metro_lux.id,
-                            product="ANAMEL",
-                            code="M38",
-                            package="Thùng",
-                            volume=15.0,
-                            price=5850000,
-                            m2_cover=120,
-                            promotion="",
-                            features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
-                            vname="Sơn bóng men sứ ngoại thất chống bám bụi",
-                            bonus_points = 15
-                        ),
-                        TypeDetail(
-                            paint_type_id=metro_lux.id,
-                            product="ANAMEL",
-                            code="M38",
-                            package="Lon",
-                            volume=5.0,
-                            price=2350000,
-                            m2_cover=30,
-                            promotion="",
-                            features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
-                            vname="Sơn bóng men sứ ngoại thất chống bám bụi",
-                            bonus_points = 3
-                        ),
-                        TypeDetail(
-                            paint_type_id=metro_lux.id,
-                            product="ANAMEL",
-                            code="M38",
-                            package="Lon",
-                            volume=1.0,
-                            price=550000,
-                            m2_cover=10,
-                            promotion="",
-                            features= "Sơn men sứ chống bám bụi cao cấp\nChống bám bụi, chống nóng, chống phai màu, bề mặt đánh cứng",
-                            vname="Sơn bóng men sứ ngoại thất chống bám bụi"  # Để trống hoặc thêm dữ liệu vname thực tế
-                        )
-                    ]
-                    db.add_all(metro_lux_details)
+                
             
             db.commit()
             print("Đã thêm dữ liệu mẫu vào bảng type_details")
@@ -1108,7 +1271,7 @@ def seed_rewards():
 if __name__ == "__main__":
     try:
         print("Bắt đầu khởi tạo database...")
-        init_db()
+        # init_db()
         # seed_data()
         # seed_paint_type()
         # clear_existing_images()
@@ -1116,7 +1279,7 @@ if __name__ == "__main__":
         # clear_existing_thumbnails()
         # seed_thumbnails()
         # seed_product_images()
-        # seed_type_detail()
+        seed_type_detail()
         # seed_order_detail()
         # seed_token_store()
         # seed_rewards()
