@@ -11,6 +11,7 @@ from app.models.cart import Cart
 from app.models.cart_items import CartItem
 from app.models.type_detail import TypeDetail
 from app.models.thumbnail import Thumbnail
+from app.models.paint_type import PaintType
 from app.models.image_resource import ImageResource
 from app.schemas.cart_items import OrderCreate, OrderResponse, DeleteIDCart, BatchUpdateRequest, UpdateCartItemRequest
 from app.models.user import User
@@ -296,6 +297,7 @@ def place_order(
     for item in cart_items:
         # Tính giá từ type_detail và số lượng
         type_detail = db.query(TypeDetail).filter(TypeDetail.id == item.type_detail_id).first()
+        paint_type = db.query(PaintType).filter(PaintType.id == type_detail.paint_type_id).first()
         if not type_detail:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -312,7 +314,7 @@ def place_order(
         print("product name ==== ", product_name)
         product_id, product_code, product_price = find_product_fast(product_name)
         main_product = {
-            "productId": product_id,  # retailerId cố định theo ví dụ
+            "productId": product_id,  
             "productCode": product_code,
             # "productName": product_name,
             "quantity": item.quantity,
@@ -321,9 +323,16 @@ def place_order(
         kiot_products.append(main_product)
         # Nếu có color_code, tạo thêm một sản phẩm màu
         extend_name = ""
-        if "nội thất" in type_detail.vname:
+        # if "nội thất" in type_detail.vname:
+        #     extend_name = "nội thất"
+        # elif "ngoại thất" in type_detail.vname:
+        #     extend_name = "ngoại thất"
+        
+        if "nội thất" in paint_type.paint_type:
             extend_name = "nội thất"
-        elif "ngoại thất" in type_detail.vname:
+        elif "ngoại thất" in paint_type.paint_type:
+            extend_name = "ngoại thất"
+        elif "chống thấm" in paint_type.paint_type:
             extend_name = "ngoại thất"
         
         if hasattr(item, 'color_code') and item.color_code!="0":
