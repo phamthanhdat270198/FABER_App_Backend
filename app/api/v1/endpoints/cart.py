@@ -328,15 +328,23 @@ def place_order(
         # elif "ngoại thất" in type_detail.vname:
         #     extend_name = "ngoại thất"
         
-        if "nội thất" in paint_type.paint_type:
+        if "nội thất" in paint_type.paint_type.lower():
             extend_name = "nội thất"
-        elif "ngoại thất" in paint_type.paint_type:
+        elif "ngoại thất" in paint_type.paint_type.lower():
             extend_name = "ngoại thất"
-        elif "chống thấm" in paint_type.paint_type:
+        elif "chống thấm" in paint_type.paint_type.lower():
             extend_name = "ngoại thất"
-        
+        print("extend name ==== ", extend_name)
         if hasattr(item, 'color_code') and item.color_code!="0":
-            product_name = f"{item.color_code} {extend_name} {int(item.volume)}L"
+            volume = str(int(item.volume))
+            # product_name = f"{item.color_code} {extend_name}{volume}L"
+            product_name = item.color_code + " " + extend_name + " " + volume + "L"
+            # print("item.volume = ", item.volume)
+            # print("len item volume ==== ", len(str(item.volume)))
+            # print("item.color_code} == ", item.color_code)
+            # print("len item color_code ==== ", len(item.color_code))
+            # print("len product code name ==== ", len(product_name))
+            # print("product code name ==== ", product_name)
             product_id, product_code, product_price = find_product_fast(product_name)
             color_product = {
                 "productId": product_id,  # retailerId cố định

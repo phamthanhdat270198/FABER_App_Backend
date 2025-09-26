@@ -70,7 +70,7 @@ def get_products_by_paint_type(
     
     result = []
     for product_name, products in product_groups.items():
-        # Tìm sản phẩm có volume ưu tiên (mặc định là 5)
+        # Tìm sản phẩm có volume ưu tiên (mặc định là 18)
         preferred_product = next((p for p in products if p.volume == preferred_volume), None)
         
         # Nếu không có sản phẩm ưu tiên, lấy sản phẩm đầu tiên
@@ -103,73 +103,6 @@ def get_products_by_paint_type(
         "products": result
     }
 
-
-# @router.get("/by-paint-type/{paint_type_id}", response_model=ProductListResponse)
-# def get_products_by_paint_type(
-#     paint_type_id: int = Path(..., title="ID của loại sơn", ge=1),
-#     preferred_volume: float = Query(18.0, title="Volume ưu tiên"),
-#     db: Session = Depends(get_db),
-#     current_user: Optional[User] = Depends(get_current_user_optional)  # Thay đổi dependency
-# ):
-#     """
-#     API 2: Lấy danh sách sản phẩm theo loại sơn
-    
-#     Ưu tiên lấy sản phẩm có volume chỉ định (mặc định là 18.0), 
-#     nếu không có sẽ lấy volume hiện có của sản phẩm
-    
-#     Hỗ trợ cả user đã đăng nhập và chưa đăng nhập
-#     """
-#     # Kiểm tra loại sơn có tồn tại không
-#     paint_type = db.query(PaintType).filter(PaintType.id == paint_type_id).first()
-#     if not paint_type:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="Không tìm thấy loại sơn"
-#         )
-    
-#     # Lấy tất cả sản phẩm thuộc loại sơn
-#     all_products = db.query(TypeDetail).filter(TypeDetail.paint_type_id == paint_type_id).all()
-    
-#     # Nhóm sản phẩm theo tên để xử lý volume
-#     product_groups = {}
-#     for product in all_products:
-#         if product.product not in product_groups:
-#             product_groups[product.product] = []
-#         product_groups[product.product].append(product)
-    
-#     result = []
-#     for product_name, products in product_groups.items():
-#         # Tìm sản phẩm có volume ưu tiên (mặc định là 18.0)
-#         preferred_product = next((p for p in products if p.volume == preferred_volume), None)
-        
-#         # Nếu không có sản phẩm ưu tiên, lấy sản phẩm đầu tiên
-#         selected_product = preferred_product if preferred_product else products[0]
-        
-#         # Lấy ảnh đầu tiên của sản phẩm nếu có
-#         image = db.query(ImageResource).filter(ImageResource.type_detail_id == selected_product.id).first()
-#         image_path = image.image_path if image else None
-
-#         # Xác định giá dựa trên loại người dùng
-#         # Nếu user chưa đăng nhập (current_user is None), hiển thị giá retail
-#         if current_user and current_user.is_agent:
-#             price = selected_product.price  # Giá agent cho user đã đăng nhập và là agent
-#         else:
-#             price = selected_product.retail_price  # Giá retail cho user chưa đăng nhập hoặc không phải agent
-        
-#         result.append(ProductItem(
-#             id=selected_product.id,
-#             name=selected_product.product,
-#             volume=selected_product.volume,
-#             price=price,
-#             image_path=image_path,
-#             vname=selected_product.vname
-#         ))
-    
-#     return {
-#         "paint_type_id": paint_type_id,
-#         "paint_type_name": paint_type.paint_type,
-#         "products": result
-#     }
 
 @router.get("/detail/{product_id}", response_model=ProductDetailGroupedResponse)
 def get_product_detail(

@@ -105,64 +105,64 @@ def seed_data():
     finally:
         db.close()
 
-def seed_paint_type():
-    """
-    Cập nhật thông tin mô tả cho các loại sơn.
-    """
-    db = SessionLocal()
-    try:
-        paint_types = db.query(PaintType).all()
-        if not paint_types:
-            print("Không có dữ liệu loại sơn trong database.")
-            return
+# def seed_paint_type():
+#     """
+#     Cập nhật thông tin mô tả cho các loại sơn.
+#     """
+#     db = SessionLocal()
+#     try:
+#         paint_types = db.query(PaintType).all()
+#         if not paint_types:
+#             print("Không có dữ liệu loại sơn trong database.")
+#             return
             
-        # Cập nhật thông tin cho từng loại sơn
-        for paint_type in paint_types:
-            # Dựa vào tên loại sơn để thêm thông tin phù hợp
-            if "Nước" in paint_type.paint_type:
-                paint_type.mo_ta_san_pham = "Sơn nước cao cấp, thân thiện với môi trường, dễ lau chùi, có khả năng kháng khuẩn và chống bám bẩn."
-                paint_type.thanh_phan = "Nhựa Acrylic, Titan Dioxide, bột màu, chất phụ gia đặc biệt và nước."
-                paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp, mỗi lớp cách nhau 2-3 giờ. Dùng cọ, con lăn hoặc máy phun sơn."
-                paint_type.luu_y = "Tránh sơn khi nhiệt độ dưới 10°C hoặc trên 35°C. Không sơn khi trời mưa hoặc độ ẩm cao."
-                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp và nhiệt độ cao. Đậy kín nắp sau khi sử dụng."
+#         # Cập nhật thông tin cho từng loại sơn
+#         for paint_type in paint_types:
+#             # Dựa vào tên loại sơn để thêm thông tin phù hợp
+#             if "Nước" in paint_type.paint_type:
+#                 paint_type.mo_ta_san_pham = "Sơn nước cao cấp, thân thiện với môi trường, dễ lau chùi, có khả năng kháng khuẩn và chống bám bẩn."
+#                 paint_type.thanh_phan = "Nhựa Acrylic, Titan Dioxide, bột màu, chất phụ gia đặc biệt và nước."
+#                 paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp, mỗi lớp cách nhau 2-3 giờ. Dùng cọ, con lăn hoặc máy phun sơn."
+#                 paint_type.luu_y = "Tránh sơn khi nhiệt độ dưới 10°C hoặc trên 35°C. Không sơn khi trời mưa hoặc độ ẩm cao."
+#                 paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp và nhiệt độ cao. Đậy kín nắp sau khi sử dụng."
             
-            elif "Dầu" in paint_type.paint_type:
-                paint_type.mo_ta_san_pham = "Sơn dầu cao cấp, bền màu, chống thấm tốt, phù hợp cho bề mặt kim loại và gỗ, chịu được thời tiết khắc nghiệt."
-                paint_type.thanh_phan = "Nhựa Alkyd, dầu, bột màu, chất phụ gia và dung môi."
-                paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp, mỗi lớp cách nhau 6-8 giờ. Dùng cọ hoặc con lăn phù hợp."
-                paint_type.luu_y = "Đảm bảo thông thoáng khi sử dụng. Tránh hút thuốc và các nguồn lửa khác. Sử dụng dụng cụ bảo hộ cá nhân."
-                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
+#             elif "Dầu" in paint_type.paint_type:
+#                 paint_type.mo_ta_san_pham = "Sơn dầu cao cấp, bền màu, chống thấm tốt, phù hợp cho bề mặt kim loại và gỗ, chịu được thời tiết khắc nghiệt."
+#                 paint_type.thanh_phan = "Nhựa Alkyd, dầu, bột màu, chất phụ gia và dung môi."
+#                 paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp, mỗi lớp cách nhau 6-8 giờ. Dùng cọ hoặc con lăn phù hợp."
+#                 paint_type.luu_y = "Đảm bảo thông thoáng khi sử dụng. Tránh hút thuốc và các nguồn lửa khác. Sử dụng dụng cụ bảo hộ cá nhân."
+#                 paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
             
-            elif "Chống Rỉ" in paint_type.paint_type:
-                paint_type.mo_ta_san_pham = "Sơn lót đặc biệt ngăn chặn quá trình oxy hóa, bảo vệ bề mặt kim loại và chống ăn mòn hiệu quả."
-                paint_type.thanh_phan = "Nhựa Epoxy, bột kẽm, chất chống ăn mòn, bột màu và dung môi."
-                paint_type.huong_dan_su_dung = "Làm sạch bề mặt cần sơn. Khuấy đều sơn. Sơn 1-2 lớp, mỗi lớp cách nhau 4-6 giờ trước khi sơn phủ."
-                paint_type.luu_y = "Phải làm sạch hoàn toàn vết rỉ trước khi sơn. Đảm bảo thông thoáng khi sử dụng."
-                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
+#             elif "Chống Rỉ" in paint_type.paint_type:
+#                 paint_type.mo_ta_san_pham = "Sơn lót đặc biệt ngăn chặn quá trình oxy hóa, bảo vệ bề mặt kim loại và chống ăn mòn hiệu quả."
+#                 paint_type.thanh_phan = "Nhựa Epoxy, bột kẽm, chất chống ăn mòn, bột màu và dung môi."
+#                 paint_type.huong_dan_su_dung = "Làm sạch bề mặt cần sơn. Khuấy đều sơn. Sơn 1-2 lớp, mỗi lớp cách nhau 4-6 giờ trước khi sơn phủ."
+#                 paint_type.luu_y = "Phải làm sạch hoàn toàn vết rỉ trước khi sơn. Đảm bảo thông thoáng khi sử dụng."
+#                 paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
             
-            elif "Epoxy" in paint_type.paint_type:
-                paint_type.mo_ta_san_pham = "Sơn hai thành phần, độ bám dính và độ bền cao, chịu hóa chất, phù hợp cho sàn công nghiệp và bề mặt bê tông."
-                paint_type.thanh_phan = "Nhựa Epoxy, chất đóng rắn, bột màu, phụ gia đặc biệt và dung môi."
-                paint_type.huong_dan_su_dung = "Trộn hai thành phần theo tỷ lệ quy định. Sử dụng trong vòng 4-6 giờ sau khi trộn. Sơn 2 lớp, mỗi lớp cách nhau 8-12 giờ."
-                paint_type.luu_y = "Không sử dụng khi nhiệt độ dưới 10°C. Đảm bảo thông thoáng khi sử dụng. Sơn sẽ cứng hoàn toàn sau 7 ngày."
-                paint_type.bao_quan = "Bảo quản hai thành phần riêng biệt. Đậy kín nắp, để nơi khô ráo, thoáng mát."
+#             elif "Epoxy" in paint_type.paint_type:
+#                 paint_type.mo_ta_san_pham = "Sơn hai thành phần, độ bám dính và độ bền cao, chịu hóa chất, phù hợp cho sàn công nghiệp và bề mặt bê tông."
+#                 paint_type.thanh_phan = "Nhựa Epoxy, chất đóng rắn, bột màu, phụ gia đặc biệt và dung môi."
+#                 paint_type.huong_dan_su_dung = "Trộn hai thành phần theo tỷ lệ quy định. Sử dụng trong vòng 4-6 giờ sau khi trộn. Sơn 2 lớp, mỗi lớp cách nhau 8-12 giờ."
+#                 paint_type.luu_y = "Không sử dụng khi nhiệt độ dưới 10°C. Đảm bảo thông thoáng khi sử dụng. Sơn sẽ cứng hoàn toàn sau 7 ngày."
+#                 paint_type.bao_quan = "Bảo quản hai thành phần riêng biệt. Đậy kín nắp, để nơi khô ráo, thoáng mát."
             
-            else:  # Mặc định cho các loại khác
-                paint_type.mo_ta_san_pham = f"Sơn {paint_type.paint_type} chất lượng cao, đáp ứng các tiêu chuẩn về độ bền và an toàn."
-                paint_type.thanh_phan = "Nhựa, bột màu, phụ gia và dung môi."
-                paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp để có hiệu quả tốt nhất."
-                paint_type.luu_y = "Đọc kỹ hướng dẫn trước khi sử dụng. Đảm bảo thông thoáng khi sơn."
-                paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
+#             else:  # Mặc định cho các loại khác
+#                 paint_type.mo_ta_san_pham = f"Sơn {paint_type.paint_type} chất lượng cao, đáp ứng các tiêu chuẩn về độ bền và an toàn."
+#                 paint_type.thanh_phan = "Nhựa, bột màu, phụ gia và dung môi."
+#                 paint_type.huong_dan_su_dung = "Khuấy đều sơn trước khi sử dụng. Sơn 2-3 lớp để có hiệu quả tốt nhất."
+#                 paint_type.luu_y = "Đọc kỹ hướng dẫn trước khi sử dụng. Đảm bảo thông thoáng khi sơn."
+#                 paint_type.bao_quan = "Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp. Đậy kín nắp sau khi sử dụng."
         
-        db.commit()
-        print(f"Đã cập nhật thông tin cho {len(paint_types)} loại sơn.")
-    except Exception as e:
-        db.rollback()
-        print(f"Lỗi khi cập nhật thông tin: {e}")
-        import traceback
-        traceback.print_exc()
-    finally:
-        db.close()
+#         db.commit()
+#         print(f"Đã cập nhật thông tin cho {len(paint_types)} loại sơn.")
+#     except Exception as e:
+#         db.rollback()
+#         print(f"Lỗi khi cập nhật thông tin: {e}")
+#         import traceback
+#         traceback.print_exc()
+#     finally:
+#         db.close()
 
     
 def seed_image():
@@ -181,11 +181,13 @@ def seed_image():
     """
     db = SessionLocal()
     # Xác định đường dẫn tuyệt đối của thư mục gốc project
-    current_file_path = os.path.abspath(__file__)
-    project_path = os.path.dirname(os.path.dirname(current_file_path))
-    image_paths = os.path.dirname(os.path.dirname(project_path))
+    # current_file_path = os.path.abspath(__file__)
+    # project_path = os.path.dirname(os.path.dirname(current_file_path))
+    # image_paths = os.path.dirname(os.path.dirname(project_path))
+    image_paths = "/var/www"
     imgs_folder = "faber_imgs"
     img_path = os.path.join(image_paths, imgs_folder)
+    print("image pathhhh :", img_path)
     # FE_path = "Faber-FE"
     # imgs_folder = r"faber_imgs"
     # img_path = os.path.join(image_paths, FE_path)
@@ -250,6 +252,7 @@ def seed_image():
                 # Create relative image path
                 image_path = os.path.join(code_folder, image_file)
                 image_path = os.path.join(imgs_folder,image_path )
+                print('image path:', image_path)
                 # image_path = os.path.join(img_path,image_path )
                 # img_vname = image_to_vname(image_path)
                 # Check if image already exists for this TypeDetail
@@ -321,7 +324,7 @@ def seed_type_detail():
             
             if paint_types:
                 # Tạo dữ liệu 
-                son_min = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn phủ nội thất cao cấp"), None)
+                son_min = next((pt for pt in paint_types if pt.paint_type == "Hệ Thống Sơn Phủ Nội Thất Cao Cấp"), None)
                 if son_min:
                     son_min_details = [
                         TypeDetail(
@@ -351,7 +354,7 @@ def seed_type_detail():
                             m2_cover=130,
                             promotion="",
                             features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
-                            vname="Sơn siêu trắng trần",
+                            vname="Sơn siêu trắng trần nội thất cao cấp",
                             bonus_points = 0,
                             bonus_points_retail=0 
                         ),
@@ -366,7 +369,7 @@ def seed_type_detail():
                             m2_cover=40,
                             promotion="",
                             features= "Sơn siêu trắng trần nội thất cao cấp chuyên dụng\nMàng sơn trắng mịn, chống nấm mốc, chịu ẩm cao",
-                            vname="Sơn siêu trắng trần",
+                            vname="Sơn siêu trắng trần nội thất cao cấp",
                             bonus_points = 0,
                             bonus_points_retail=0 
                         ),
@@ -509,7 +512,7 @@ def seed_type_detail():
                     db.add_all(son_min_details)
                 
                 # Tạo dữ liệu mẫu cho sơn dầu (nếu có)
-                son_bong = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn phủ ngoại thất cao cấp"), None)
+                son_bong = next((pt for pt in paint_types if pt.paint_type == "Hệ Thống Sơn Phủ Ngoại Thất Cao Cấp"), None)
                 if son_bong:
                     son_bong_details = [
                         TypeDetail(
@@ -651,7 +654,7 @@ def seed_type_detail():
                     db.add_all(son_bong_details)
                 
                 # Tạo dữ liệu mẫu cho sơn epoxy (nếu có)
-                son_chong_tham_mau = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn chống thấm"), None)
+                son_chong_tham_mau = next((pt for pt in paint_types if pt.paint_type == "Hệ Thống Sơn Chống Thấm"), None)
                 if son_chong_tham_mau:
                     son_chong_tham_mau_details = [
                         TypeDetail(
@@ -728,12 +731,27 @@ def seed_type_detail():
                             vname="Sơn chống thấm đa năng",
                             bonus_points = 0,
                             bonus_points_retail= 0
+                        ),
+                        TypeDetail(
+                            paint_type_id=son_chong_tham_mau.id,
+                            product="AC500",
+                            code="CT2TP",
+                            package="Thùng",
+                            volume=18.0,
+                            price=570000,
+                            retail_price=870000,
+                            m2_cover=30,
+                            promotion="",
+                            features= "Chống thấm 2 thành phần polymer gốc xi măng , độ bám dính và chống thấm tối đa",
+                            vname="Sơn chống thấm 2 thành phần polymer gốc xi măng",
+                            bonus_points = 0,
+                            bonus_points_retail= 0
                         )
                     ]
                     db.add_all(son_chong_tham_mau_details)
 
                 # Tạo dữ liệu mẫu cho  Sơn lót chống kiềm (nếu có)
-                son_lot_chong_kiem = next((pt for pt in paint_types if pt.paint_type == "Hệ thống sơn lót kháng kiềm"), None)
+                son_lot_chong_kiem = next((pt for pt in paint_types if pt.paint_type == "Hệ Thống Sơn Lót Kháng Kiềm"), None)
                 if son_lot_chong_kiem:
                     son_lot_chong_kiem_details = [
                         TypeDetail(
@@ -1036,9 +1054,10 @@ def seed_thumbnails():
     """
     db = SessionLocal()
     # Xác định đường dẫn tuyệt đối của thư mục gốc project
-    current_file_path = os.path.abspath(__file__)
-    project_path = os.path.dirname(os.path.dirname(current_file_path))
-    image_paths = os.path.dirname(os.path.dirname(project_path))
+    # current_file_path = os.path.abspath(__file__)
+    # project_path = os.path.dirname(os.path.dirname(current_file_path))
+    # image_paths = os.path.dirname(os.path.dirname(project_path))
+    image_paths = "/var/www"
     imgs_folder = "faber_thumbs"
     thumb_path = os.path.join(image_paths, imgs_folder)
     # FE_path = "Faber-FE"
@@ -1194,10 +1213,10 @@ def seed_rewards():
     """
     db = SessionLocal()
     # Xóa dữ liệu cũ (tùy chọn)
-    current_file_path = os.path.abspath(__file__)
-    project_path = os.path.dirname(os.path.dirname(current_file_path))
-    image_paths = os.path.dirname(os.path.dirname(project_path))
-    imgs_folder = "faber_reward_imgs"
+    # current_file_path = os.path.abspath(__file__)
+    # project_path = os.path.dirname(os.path.dirname(current_file_path))
+    # image_paths = os.path.dirname(os.path.dirname(project_path))
+    # imgs_folder = "faber_reward_imgs"
     db.query(RewardInfo).delete()
     
     # Phần thưởng thông thường
@@ -1212,21 +1231,21 @@ def seed_rewards():
             name="Máy lọc không khí",
             type=RewardType.REGULAR,
             is_special=False,
-            image_url="faber_reward_imgs/may_loc_kk.png"
+            image_url="faber_reward_imgs/may_loc.png"
         ),
         RewardInfo(
             name="Máy hút bụi cầm tay",
             type=RewardType.REGULAR,
             is_special=False,
-            image_url="faber_reward_imgs/may_hut_bui.png"
+            image_url="faber_reward_imgs/hut_bui.png"
         ),
 
-        RewardInfo(
-            name="2 thùng sơn lót nội thất cao cấp",
-            type=RewardType.REGULAR,
-            is_special=False,
-            image_url="faber_reward_imgs/son.jpg"
-        )
+        # RewardInfo(
+        #     name="2 thùng sơn lót nội thất cao cấp",
+        #     type=RewardType.REGULAR,
+        #     is_special=False,
+        #     image_url="faber_reward_imgs/son.jpg"
+        # )
     ]
     #phần thưởng seeding
     ignore_rewards = [
@@ -1234,7 +1253,7 @@ def seed_rewards():
             name="TV Samsung",
             type=RewardType.IGNORE,
             is_special=False,
-            image_url="faber_reward_imgs/tv_samsung.jpg"
+            image_url="faber_reward_imgs/tivi.png"
         )
     ]
     # Phần thưởng đặc biệt
@@ -1243,23 +1262,23 @@ def seed_rewards():
             name="Nửa chỉ vàng",
             type=RewardType.SPECIAL,
             is_special=True,
+            special_spin_number=4,
+            image_url="faber_reward_imgs/chi_vang.png"
+        ),
+        RewardInfo(
+            name="TV Samsung",
+            type=RewardType.SPECIAL,
+            is_special=True,
             special_spin_number=5,
-            image_url="faber_reward_imgs/vang.jpg"
+            image_url="faber_reward_imgs/chi_vang.png"
         ),
-        RewardInfo(
-            name="1 chỉ vàng",
-            type=RewardType.SPECIAL,
-            is_special=True,
-            special_spin_number=9,
-            image_url="faber_reward_imgs/vang.png"
-        ),
-        RewardInfo(
-            name="Xe Vision",
-            type=RewardType.SPECIAL,
-            is_special=True,
-            special_spin_number=15,
-            image_url="faber_reward_imgs/xe_vision.png"
-        )
+        # RewardInfo(
+        #     name="Xe Vision",
+        #     type=RewardType.SPECIAL,
+        #     is_special=True,
+        #     special_spin_number=15,
+        #     image_url="faber_reward_imgs/xe_vision.png"
+        
     ]
     
     # Thêm tất cả phần thưởng vào database
@@ -1274,12 +1293,12 @@ if __name__ == "__main__":
         # init_db()
         # seed_data()
         # seed_paint_type()
-        # clear_existing_images()
-        # seed_image()
-        # clear_existing_thumbnails()
-        # seed_thumbnails()
+        clear_existing_images()
+        seed_image()
+        clear_existing_thumbnails()
+        seed_thumbnails()
         # seed_product_images()
-        seed_type_detail()
+        # seed_type_detail()
         # seed_order_detail()
         # seed_token_store()
         # seed_rewards()

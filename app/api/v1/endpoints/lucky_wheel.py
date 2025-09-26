@@ -81,17 +81,20 @@ def use_spin(current_user: User = Depends(get_current_user)
     
     # Trừ điểm thưởng và tăng kth_spin
     user.diem_thuong -= POINTS_PER_SPIN
+    print("user kth_spin before:", user.kth_spin)
     user.kth_spin += 1
 
     # Xác định phần quà dựa vào kth_spin hiện tại
     current_spin = user.kth_spin
-    
+    print("user kth_spin after:", user.kth_spin)
+    print("SPECIAL_REWARDS:", SPECIAL_REWARDS)
     # Kiểm tra xem có phải lượt quay đặc biệt không
     if current_spin in SPECIAL_REWARDS:
         reward_type = SPECIAL_REWARDS[current_spin]
     else:
         # Nếu không phải lượt quay đặc biệt, chọn ngẫu nhiên từ danh sách phần quà thông thường
         reward_type = random.choice(REGULAR_REWARDS)
+    print("reward_type:", reward_type)
     reward_info = db.query(RewardInfo).filter(RewardInfo.name == reward_type).first()
 
     # Tạo bản ghi phần quà trong database
