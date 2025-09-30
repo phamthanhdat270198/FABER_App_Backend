@@ -33,8 +33,8 @@ def get_current_user(
     user = get(db, id=token_data.sub)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Không tìm thấy người dùng"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Người dùng không tồn tại hoặc đã bị xóa",
         )
     return user
 
